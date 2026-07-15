@@ -110,8 +110,17 @@ public static class StickmanSetup
         return mat;
     }
 
+    private static Bounds RigBounds(GameObject rig)
+    {
+        var rends = rig.GetComponentsInChildren<Renderer>();
+        if (rends.Length == 0) throw new Exception("Rig has no renderers");
+        var b = rends[0].bounds;
+        for (var i = 1; i < rends.Length; i++) b.Encapsulate(rends[i].bounds);
+        return b;
+    }
+
     private static GameObject AttachRig(GameObject parent, AnimatorController controller,
-                                        Material mat, float footY, float scale)
+                                        Material mat, CapsuleCollider col, float heightMultiplier)
     {
         var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
         if (model == null) throw new Exception($"Model not found at {ModelPath}");
@@ -119,9 +128,8 @@ public static class StickmanSetup
         var rig = (GameObject)PrefabUtility.InstantiatePrefab(model);
         rig.name = "StickmanRig";
         rig.transform.SetParent(parent.transform, false);      // appended LAST: keeps GetChild(n) indices
-        rig.transform.localPosition = new Vector3(0f, footY, 0f);
+        rig.transform.localPosition = Vector3.zero;
         rig.transform.localRotation = Quaternion.identity;
-        rig.transform.localScale = Vector3.one * scale;
 
         var animator = rig.GetComponent<Animator>();
         if (animator == null) animator = rig.AddComponent<Animator>();
@@ -130,6 +138,22 @@ public static class StickmanSetup
 
         foreach (var r in rig.GetComponentsInChildren<Renderer>())
             r.sharedMaterials = Enumerable.Repeat(mat, r.sharedMaterials.Length).ToArray();
+
+        // FBX import scale varies wildly (file-scale cm units etc.) — don't trust it.
+        // Measure what actually renders and scale the rig so it fills the collider height.
+        var lossyY = col != null ? col.transform.lossyScale.y : parent.transform.lossyScale.y;
+        var targetHeight = (col != null ? col.height : 2f) * lossyY * heightMultiplier;
+        var bounds = RigBounds(rig);
+        if (bounds.size.y < 1e-5f) throw new Exception("Rig renders with ~zero height");
+        rig.transform.localScale *= targetHeight / bounds.size.y;
+
+        // stand the feet on the unit's origin plane (= the track surface). NOT the collider
+        // bottom — the capsule collider intentionally pokes below the track, and snapping to
+        // it buried half the character under the floor.
+        bounds = RigBounds(rig);
+        rig.transform.position += new Vector3(0f, parent.transform.position.y - bounds.min.y, 0f);
+
+        Debug.Log($"[StickmanSetup] rig scaled to height {targetHeight:F2} (scale {rig.transform.localScale.y:F3})");
         return rig;
     }
 
@@ -139,12 +163,8 @@ public static class StickmanSetup
         var root = PrefabUtility.LoadPrefabContents(CatPrefabPath);
         try
         {
-            if (root.transform.Find("StickmanRig") != null)
-            { Debug.Log("[StickmanSetup] crowd already swapped, skipping"); return; }
-
-            // feet position from the capsule collider so the rig stands on the same ground plane
-            var col = root.GetComponent<CapsuleCollider>();
-            var footY = col != null ? col.center.y - col.height * 0.5f : 0f;
+            var old = root.transform.Find("StickmanRig");
+            if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject); // rebuild on re-run
 
             // strip the capsule visual + the root Animator (Cat.cs must find the rig's animator;
             // GetComponentInChildren checks the root FIRST, so the root one has to go)
@@ -152,9 +172,9 @@ public static class StickmanSetup
             StripComponent<MeshRenderer>(root);
             StripComponent<Animator>(root);
 
-            AttachRig(root, controller, blue, footY, 1f);
+            AttachRig(root, controller, blue, root.GetComponent<CapsuleCollider>(), 1f);
             PrefabUtility.SaveAsPrefabAsset(root, CatPrefabPath);   // same path => GUID preserved
-            Debug.Log($"[StickmanSetup] crowd unit swapped (footY={footY:F2})");
+            Debug.Log("[StickmanSetup] crowd unit swapped");
         }
         finally { PrefabUtility.UnloadPrefabContents(root); }
     }
@@ -165,22 +185,22 @@ public static class StickmanSetup
         var root = PrefabUtility.LoadPrefabContents(BossPrefabPath);
         try
         {
-            // find whichever GameObject renders the built-in capsule
+            // find whichever GameObject renders the built-in capsule; on re-runs the capsule is
+            // already gone, so fall back to wherever the previous rig was attached
             var capsuleMf = root.GetComponentsInChildren<MeshFilter>(true)
                 .FirstOrDefault(mf => mf.sharedMesh != null && mf.sharedMesh.name == "Capsule");
-            if (capsuleMf == null)
-            { Debug.LogWarning("[StickmanSetup] boss: no capsule visual found, skipping"); return; }
-
-            var host = capsuleMf.gameObject;
-            if (host.transform.Find("StickmanRig") != null)
-            { Debug.Log("[StickmanSetup] boss already swapped, skipping"); return; }
-
-            var col = host.GetComponent<CapsuleCollider>();
-            var footY = col != null ? col.center.y - col.height * 0.5f : -1f;
+            var host = capsuleMf != null
+                ? capsuleMf.gameObject
+                : root.GetComponentsInChildren<Transform>(true)
+                    .FirstOrDefault(t => t.name == "StickmanRig")?.parent.gameObject;
+            if (host == null)
+            { Debug.LogWarning("[StickmanSetup] boss: no capsule visual or prior rig found, skipping"); return; }
+            var old = host.transform.Find("StickmanRig");
+            if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject); // rebuild on re-run
 
             StripComponent<MeshRenderer>(host);   // visual only — collider, children, scripts untouched
             StripComponent<MeshFilter>(host);
-            AttachRig(host, controller, orange, footY, 2.2f);   // bigger = menacing
+            AttachRig(host, controller, orange, host.GetComponent<CapsuleCollider>(), 2.2f);   // bigger = menacing
 
             PrefabUtility.SaveAsPrefabAsset(root, BossPrefabPath);
             Debug.Log("[StickmanSetup] boss visual swapped");

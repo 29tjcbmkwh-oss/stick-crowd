@@ -1,331 +1,971 @@
 fileFormatVersion: 2
 guid: e34fa8afc9a55ed4bacccda1cd9aa7b4
 ModelImporter:
-  serializedVersion: 23
-  fileIDToRecycleName:
-    100000: Controllers
-    100002: Head
-    100004: HeadEND
-    100006: Hips
-    100008: LeftArm
-    100010: LeftCalf
-    100012: LeftFoot
-    100014: LeftFootEND
-    100016: LeftHand
-    100018: LeftIndex1
-    100020: LeftIndex2
-    100022: LeftIndex3
-    100024: LeftIndexEND
-    100026: LeftLeg
-    100028: LeftMiddle1
-    100030: LeftMiddle2
-    100032: LeftMiddle3
-    100034: LeftMiddleEND
-    100036: LeftPinky1
-    100038: LeftPinky2
-    100040: LeftPinky3
-    100042: LeftPinkyEND
-    100044: LeftRing1
-    100046: LeftRing2
-    100048: LeftRing3
-    100050: LeftRingEND
-    100052: LeftShoulder
-    100054: LeftShoulderOrient
-    100056: LeftThumb1
-    100058: LeftThumb2
-    100060: LeftThumb3
-    100062: LeftThumbEND
-    100064: LeftThumbOrient
-    100066: LeftThumbOrient 1
-    100068: LeftUpperArm
-    100070: Neck
-    100072: nurbsCircle2
-    100074: nurbsCircle4
-    100076: nurbsCircle5
-    100078: nurbsCircle6
-    100080: nurbsCircle6 1
-    100082: nurbsCircle7
-    100084: nurbsCircle8
-    100086: pCylinder1
-    100088: pCylinder1 1
-    100090: pCylinder10
-    100092: pCylinder10 1
-    100094: pCylinder11
-    100096: pCylinder11 1
-    100098: pCylinder12
-    100100: pCylinder12 1
-    100102: pCylinder13
-    100104: pCylinder13 1
-    100106: pCylinder14
-    100108: pCylinder14 1
-    100110: pCylinder15
-    100112: pCylinder15 1
-    100114: pCylinder2
-    100116: pCylinder2 1
-    100118: pCylinder3
-    100120: pCylinder3 1
-    100122: pCylinder4
-    100124: pCylinder4 1
-    100126: pCylinder5
-    100128: pCylinder5 1
-    100130: pCylinder6
-    100132: pCylinder6 1
-    100134: pCylinder7
-    100136: pCylinder7 1
-    100138: pCylinder8
-    100140: pCylinder8 1
-    100142: pCylinder9
-    100144: pCylinder9 1
-    100146: //RootNode
-    100148: pSphere2
-    100150: pSphere4
-    100152: RightArm
-    100154: RightCalf
-    100156: RightFoot
-    100158: RightFootEND
-    100160: RightHand
-    100162: RightIndex1
-    100164: RightIndex2
-    100166: RightIndex3
-    100168: RightIndexEND
-    100170: RightLeg
-    100172: RightMiddle1
-    100174: RightMiddle2
-    100176: RightMiddle3
-    100178: RightMiddleEND
-    100180: RightPinky1
-    100182: RightPinky2
-    100184: RightPinky3
-    100186: RightPinkyEND
-    100188: RightRing1
-    100190: RightRing2
-    100192: RightRing3
-    100194: RightRingEND
-    100196: RightShoulder
-    100198: RightShoulderOrient
-    100200: RightThumb1
-    100202: RightThumb2
-    100204: RightThumb3
-    100206: RightThumbEND
-    100208: RightUpperArm
-    100210: Root
-    100212: Spine1
-    100214: Spine2
-    100216: Template_Character
-    400000: Controllers
-    400002: Head
-    400004: HeadEND
-    400006: Hips
-    400008: LeftArm
-    400010: LeftCalf
-    400012: LeftFoot
-    400014: LeftFootEND
-    400016: LeftHand
-    400018: LeftIndex1
-    400020: LeftIndex2
-    400022: LeftIndex3
-    400024: LeftIndexEND
-    400026: LeftLeg
-    400028: LeftMiddle1
-    400030: LeftMiddle2
-    400032: LeftMiddle3
-    400034: LeftMiddleEND
-    400036: LeftPinky1
-    400038: LeftPinky2
-    400040: LeftPinky3
-    400042: LeftPinkyEND
-    400044: LeftRing1
-    400046: LeftRing2
-    400048: LeftRing3
-    400050: LeftRingEND
-    400052: LeftShoulder
-    400054: LeftShoulderOrient
-    400056: LeftThumb1
-    400058: LeftThumb2
-    400060: LeftThumb3
-    400062: LeftThumbEND
-    400064: LeftThumbOrient
-    400066: LeftThumbOrient 1
-    400068: LeftUpperArm
-    400070: Neck
-    400072: nurbsCircle2
-    400074: nurbsCircle4
-    400076: nurbsCircle5
-    400078: nurbsCircle6
-    400080: nurbsCircle6 1
-    400082: nurbsCircle7
-    400084: nurbsCircle8
-    400086: pCylinder1
-    400088: pCylinder1 1
-    400090: pCylinder10
-    400092: pCylinder10 1
-    400094: pCylinder11
-    400096: pCylinder11 1
-    400098: pCylinder12
-    400100: pCylinder12 1
-    400102: pCylinder13
-    400104: pCylinder13 1
-    400106: pCylinder14
-    400108: pCylinder14 1
-    400110: pCylinder15
-    400112: pCylinder15 1
-    400114: pCylinder2
-    400116: pCylinder2 1
-    400118: pCylinder3
-    400120: pCylinder3 1
-    400122: pCylinder4
-    400124: pCylinder4 1
-    400126: pCylinder5
-    400128: pCylinder5 1
-    400130: pCylinder6
-    400132: pCylinder6 1
-    400134: pCylinder7
-    400136: pCylinder7 1
-    400138: pCylinder8
-    400140: pCylinder8 1
-    400142: pCylinder9
-    400144: pCylinder9 1
-    400146: //RootNode
-    400148: pSphere2
-    400150: pSphere4
-    400152: RightArm
-    400154: RightCalf
-    400156: RightFoot
-    400158: RightFootEND
-    400160: RightHand
-    400162: RightIndex1
-    400164: RightIndex2
-    400166: RightIndex3
-    400168: RightIndexEND
-    400170: RightLeg
-    400172: RightMiddle1
-    400174: RightMiddle2
-    400176: RightMiddle3
-    400178: RightMiddleEND
-    400180: RightPinky1
-    400182: RightPinky2
-    400184: RightPinky3
-    400186: RightPinkyEND
-    400188: RightRing1
-    400190: RightRing2
-    400192: RightRing3
-    400194: RightRingEND
-    400196: RightShoulder
-    400198: RightShoulderOrient
-    400200: RightThumb1
-    400202: RightThumb2
-    400204: RightThumb3
-    400206: RightThumbEND
-    400208: RightUpperArm
-    400210: Root
-    400212: Spine1
-    400214: Spine2
-    400216: Template_Character
-    2100000: lambert1
-    2100002: Template_Character_Material
-    2300000: pCylinder1
-    2300002: pCylinder1 1
-    2300004: pCylinder10
-    2300006: pCylinder10 1
-    2300008: pCylinder11
-    2300010: pCylinder11 1
-    2300012: pCylinder12
-    2300014: pCylinder12 1
-    2300016: pCylinder13
-    2300018: pCylinder13 1
-    2300020: pCylinder14
-    2300022: pCylinder14 1
-    2300024: pCylinder15
-    2300026: pCylinder15 1
-    2300028: pCylinder2
-    2300030: pCylinder2 1
-    2300032: pCylinder3
-    2300034: pCylinder3 1
-    2300036: pCylinder4
-    2300038: pCylinder4 1
-    2300040: pCylinder5
-    2300042: pCylinder5 1
-    2300044: pCylinder6
-    2300046: pCylinder6 1
-    2300048: pCylinder7
-    2300050: pCylinder7 1
-    2300052: pCylinder8
-    2300054: pCylinder8 1
-    2300056: pCylinder9
-    2300058: pCylinder9 1
-    2300060: pSphere2
-    2300062: pSphere4
-    3300000: pCylinder1
-    3300002: pCylinder1 1
-    3300004: pCylinder10
-    3300006: pCylinder10 1
-    3300008: pCylinder11
-    3300010: pCylinder11 1
-    3300012: pCylinder12
-    3300014: pCylinder12 1
-    3300016: pCylinder13
-    3300018: pCylinder13 1
-    3300020: pCylinder14
-    3300022: pCylinder14 1
-    3300024: pCylinder15
-    3300026: pCylinder15 1
-    3300028: pCylinder2
-    3300030: pCylinder2 1
-    3300032: pCylinder3
-    3300034: pCylinder3 1
-    3300036: pCylinder4
-    3300038: pCylinder4 1
-    3300040: pCylinder5
-    3300042: pCylinder5 1
-    3300044: pCylinder6
-    3300046: pCylinder6 1
-    3300048: pCylinder7
-    3300050: pCylinder7 1
-    3300052: pCylinder8
-    3300054: pCylinder8 1
-    3300056: pCylinder9
-    3300058: pCylinder9 1
-    3300060: pSphere2
-    3300062: pSphere4
-    4300000: pSphere4
-    4300002: pCylinder10
-    4300004: pCylinder11
-    4300006: pCylinder12
-    4300008: pCylinder7
-    4300010: pCylinder8
-    4300012: pCylinder9
-    4300014: pCylinder4
-    4300016: pCylinder5
-    4300018: pCylinder6
-    4300020: pCylinder1
-    4300022: pCylinder2
-    4300024: pCylinder3
-    4300026: pCylinder13
-    4300028: pCylinder14
-    4300030: pCylinder15
-    4300032: pSphere2
-    4300034: pCylinder10
-    4300036: pCylinder11
-    4300038: pCylinder12
-    4300040: pCylinder7
-    4300042: pCylinder8
-    4300044: pCylinder9
-    4300046: pCylinder4
-    4300048: pCylinder5
-    4300050: pCylinder6
-    4300052: pCylinder1
-    4300054: pCylinder2
-    4300056: pCylinder3
-    4300058: pCylinder13
-    4300060: pCylinder14
-    4300062: pCylinder15
-    4300064: Template_Character
-    7400000: Run
-    9500000: //RootNode
-    13700000: Template_Character
+  serializedVersion: 21300
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: Controllers
+  - first:
+      1: 100002
+    second: Head
+  - first:
+      1: 100004
+    second: HeadEND
+  - first:
+      1: 100006
+    second: Hips
+  - first:
+      1: 100008
+    second: LeftArm
+  - first:
+      1: 100010
+    second: LeftCalf
+  - first:
+      1: 100012
+    second: LeftFoot
+  - first:
+      1: 100014
+    second: LeftFootEND
+  - first:
+      1: 100016
+    second: LeftHand
+  - first:
+      1: 100018
+    second: LeftIndex1
+  - first:
+      1: 100020
+    second: LeftIndex2
+  - first:
+      1: 100022
+    second: LeftIndex3
+  - first:
+      1: 100024
+    second: LeftIndexEND
+  - first:
+      1: 100026
+    second: LeftLeg
+  - first:
+      1: 100028
+    second: LeftMiddle1
+  - first:
+      1: 100030
+    second: LeftMiddle2
+  - first:
+      1: 100032
+    second: LeftMiddle3
+  - first:
+      1: 100034
+    second: LeftMiddleEND
+  - first:
+      1: 100036
+    second: LeftPinky1
+  - first:
+      1: 100038
+    second: LeftPinky2
+  - first:
+      1: 100040
+    second: LeftPinky3
+  - first:
+      1: 100042
+    second: LeftPinkyEND
+  - first:
+      1: 100044
+    second: LeftRing1
+  - first:
+      1: 100046
+    second: LeftRing2
+  - first:
+      1: 100048
+    second: LeftRing3
+  - first:
+      1: 100050
+    second: LeftRingEND
+  - first:
+      1: 100052
+    second: LeftShoulder
+  - first:
+      1: 100054
+    second: LeftShoulderOrient
+  - first:
+      1: 100056
+    second: LeftThumb1
+  - first:
+      1: 100058
+    second: LeftThumb2
+  - first:
+      1: 100060
+    second: LeftThumb3
+  - first:
+      1: 100062
+    second: LeftThumbEND
+  - first:
+      1: 100064
+    second: LeftThumbOrient
+  - first:
+      1: 100066
+    second: LeftThumbOrient 1
+  - first:
+      1: 100068
+    second: LeftUpperArm
+  - first:
+      1: 100070
+    second: Neck
+  - first:
+      1: 100072
+    second: nurbsCircle2
+  - first:
+      1: 100074
+    second: nurbsCircle4
+  - first:
+      1: 100076
+    second: nurbsCircle5
+  - first:
+      1: 100078
+    second: nurbsCircle6
+  - first:
+      1: 100080
+    second: nurbsCircle6 1
+  - first:
+      1: 100082
+    second: nurbsCircle7
+  - first:
+      1: 100084
+    second: nurbsCircle8
+  - first:
+      1: 100086
+    second: pCylinder1
+  - first:
+      1: 100088
+    second: pCylinder1 1
+  - first:
+      1: 100090
+    second: pCylinder10
+  - first:
+      1: 100092
+    second: pCylinder10 1
+  - first:
+      1: 100094
+    second: pCylinder11
+  - first:
+      1: 100096
+    second: pCylinder11 1
+  - first:
+      1: 100098
+    second: pCylinder12
+  - first:
+      1: 100100
+    second: pCylinder12 1
+  - first:
+      1: 100102
+    second: pCylinder13
+  - first:
+      1: 100104
+    second: pCylinder13 1
+  - first:
+      1: 100106
+    second: pCylinder14
+  - first:
+      1: 100108
+    second: pCylinder14 1
+  - first:
+      1: 100110
+    second: pCylinder15
+  - first:
+      1: 100112
+    second: pCylinder15 1
+  - first:
+      1: 100114
+    second: pCylinder2
+  - first:
+      1: 100116
+    second: pCylinder2 1
+  - first:
+      1: 100118
+    second: pCylinder3
+  - first:
+      1: 100120
+    second: pCylinder3 1
+  - first:
+      1: 100122
+    second: pCylinder4
+  - first:
+      1: 100124
+    second: pCylinder4 1
+  - first:
+      1: 100126
+    second: pCylinder5
+  - first:
+      1: 100128
+    second: pCylinder5 1
+  - first:
+      1: 100130
+    second: pCylinder6
+  - first:
+      1: 100132
+    second: pCylinder6 1
+  - first:
+      1: 100134
+    second: pCylinder7
+  - first:
+      1: 100136
+    second: pCylinder7 1
+  - first:
+      1: 100138
+    second: pCylinder8
+  - first:
+      1: 100140
+    second: pCylinder8 1
+  - first:
+      1: 100142
+    second: pCylinder9
+  - first:
+      1: 100144
+    second: pCylinder9 1
+  - first:
+      1: 100146
+    second: //RootNode
+  - first:
+      1: 100148
+    second: pSphere2
+  - first:
+      1: 100150
+    second: pSphere4
+  - first:
+      1: 100152
+    second: RightArm
+  - first:
+      1: 100154
+    second: RightCalf
+  - first:
+      1: 100156
+    second: RightFoot
+  - first:
+      1: 100158
+    second: RightFootEND
+  - first:
+      1: 100160
+    second: RightHand
+  - first:
+      1: 100162
+    second: RightIndex1
+  - first:
+      1: 100164
+    second: RightIndex2
+  - first:
+      1: 100166
+    second: RightIndex3
+  - first:
+      1: 100168
+    second: RightIndexEND
+  - first:
+      1: 100170
+    second: RightLeg
+  - first:
+      1: 100172
+    second: RightMiddle1
+  - first:
+      1: 100174
+    second: RightMiddle2
+  - first:
+      1: 100176
+    second: RightMiddle3
+  - first:
+      1: 100178
+    second: RightMiddleEND
+  - first:
+      1: 100180
+    second: RightPinky1
+  - first:
+      1: 100182
+    second: RightPinky2
+  - first:
+      1: 100184
+    second: RightPinky3
+  - first:
+      1: 100186
+    second: RightPinkyEND
+  - first:
+      1: 100188
+    second: RightRing1
+  - first:
+      1: 100190
+    second: RightRing2
+  - first:
+      1: 100192
+    second: RightRing3
+  - first:
+      1: 100194
+    second: RightRingEND
+  - first:
+      1: 100196
+    second: RightShoulder
+  - first:
+      1: 100198
+    second: RightShoulderOrient
+  - first:
+      1: 100200
+    second: RightThumb1
+  - first:
+      1: 100202
+    second: RightThumb2
+  - first:
+      1: 100204
+    second: RightThumb3
+  - first:
+      1: 100206
+    second: RightThumbEND
+  - first:
+      1: 100208
+    second: RightUpperArm
+  - first:
+      1: 100210
+    second: Root
+  - first:
+      1: 100212
+    second: Spine1
+  - first:
+      1: 100214
+    second: Spine2
+  - first:
+      1: 100216
+    second: Template_Character
+  - first:
+      4: 400000
+    second: Controllers
+  - first:
+      4: 400002
+    second: Head
+  - first:
+      4: 400004
+    second: HeadEND
+  - first:
+      4: 400006
+    second: Hips
+  - first:
+      4: 400008
+    second: LeftArm
+  - first:
+      4: 400010
+    second: LeftCalf
+  - first:
+      4: 400012
+    second: LeftFoot
+  - first:
+      4: 400014
+    second: LeftFootEND
+  - first:
+      4: 400016
+    second: LeftHand
+  - first:
+      4: 400018
+    second: LeftIndex1
+  - first:
+      4: 400020
+    second: LeftIndex2
+  - first:
+      4: 400022
+    second: LeftIndex3
+  - first:
+      4: 400024
+    second: LeftIndexEND
+  - first:
+      4: 400026
+    second: LeftLeg
+  - first:
+      4: 400028
+    second: LeftMiddle1
+  - first:
+      4: 400030
+    second: LeftMiddle2
+  - first:
+      4: 400032
+    second: LeftMiddle3
+  - first:
+      4: 400034
+    second: LeftMiddleEND
+  - first:
+      4: 400036
+    second: LeftPinky1
+  - first:
+      4: 400038
+    second: LeftPinky2
+  - first:
+      4: 400040
+    second: LeftPinky3
+  - first:
+      4: 400042
+    second: LeftPinkyEND
+  - first:
+      4: 400044
+    second: LeftRing1
+  - first:
+      4: 400046
+    second: LeftRing2
+  - first:
+      4: 400048
+    second: LeftRing3
+  - first:
+      4: 400050
+    second: LeftRingEND
+  - first:
+      4: 400052
+    second: LeftShoulder
+  - first:
+      4: 400054
+    second: LeftShoulderOrient
+  - first:
+      4: 400056
+    second: LeftThumb1
+  - first:
+      4: 400058
+    second: LeftThumb2
+  - first:
+      4: 400060
+    second: LeftThumb3
+  - first:
+      4: 400062
+    second: LeftThumbEND
+  - first:
+      4: 400064
+    second: LeftThumbOrient
+  - first:
+      4: 400066
+    second: LeftThumbOrient 1
+  - first:
+      4: 400068
+    second: LeftUpperArm
+  - first:
+      4: 400070
+    second: Neck
+  - first:
+      4: 400072
+    second: nurbsCircle2
+  - first:
+      4: 400074
+    second: nurbsCircle4
+  - first:
+      4: 400076
+    second: nurbsCircle5
+  - first:
+      4: 400078
+    second: nurbsCircle6
+  - first:
+      4: 400080
+    second: nurbsCircle6 1
+  - first:
+      4: 400082
+    second: nurbsCircle7
+  - first:
+      4: 400084
+    second: nurbsCircle8
+  - first:
+      4: 400086
+    second: pCylinder1
+  - first:
+      4: 400088
+    second: pCylinder1 1
+  - first:
+      4: 400090
+    second: pCylinder10
+  - first:
+      4: 400092
+    second: pCylinder10 1
+  - first:
+      4: 400094
+    second: pCylinder11
+  - first:
+      4: 400096
+    second: pCylinder11 1
+  - first:
+      4: 400098
+    second: pCylinder12
+  - first:
+      4: 400100
+    second: pCylinder12 1
+  - first:
+      4: 400102
+    second: pCylinder13
+  - first:
+      4: 400104
+    second: pCylinder13 1
+  - first:
+      4: 400106
+    second: pCylinder14
+  - first:
+      4: 400108
+    second: pCylinder14 1
+  - first:
+      4: 400110
+    second: pCylinder15
+  - first:
+      4: 400112
+    second: pCylinder15 1
+  - first:
+      4: 400114
+    second: pCylinder2
+  - first:
+      4: 400116
+    second: pCylinder2 1
+  - first:
+      4: 400118
+    second: pCylinder3
+  - first:
+      4: 400120
+    second: pCylinder3 1
+  - first:
+      4: 400122
+    second: pCylinder4
+  - first:
+      4: 400124
+    second: pCylinder4 1
+  - first:
+      4: 400126
+    second: pCylinder5
+  - first:
+      4: 400128
+    second: pCylinder5 1
+  - first:
+      4: 400130
+    second: pCylinder6
+  - first:
+      4: 400132
+    second: pCylinder6 1
+  - first:
+      4: 400134
+    second: pCylinder7
+  - first:
+      4: 400136
+    second: pCylinder7 1
+  - first:
+      4: 400138
+    second: pCylinder8
+  - first:
+      4: 400140
+    second: pCylinder8 1
+  - first:
+      4: 400142
+    second: pCylinder9
+  - first:
+      4: 400144
+    second: pCylinder9 1
+  - first:
+      4: 400146
+    second: //RootNode
+  - first:
+      4: 400148
+    second: pSphere2
+  - first:
+      4: 400150
+    second: pSphere4
+  - first:
+      4: 400152
+    second: RightArm
+  - first:
+      4: 400154
+    second: RightCalf
+  - first:
+      4: 400156
+    second: RightFoot
+  - first:
+      4: 400158
+    second: RightFootEND
+  - first:
+      4: 400160
+    second: RightHand
+  - first:
+      4: 400162
+    second: RightIndex1
+  - first:
+      4: 400164
+    second: RightIndex2
+  - first:
+      4: 400166
+    second: RightIndex3
+  - first:
+      4: 400168
+    second: RightIndexEND
+  - first:
+      4: 400170
+    second: RightLeg
+  - first:
+      4: 400172
+    second: RightMiddle1
+  - first:
+      4: 400174
+    second: RightMiddle2
+  - first:
+      4: 400176
+    second: RightMiddle3
+  - first:
+      4: 400178
+    second: RightMiddleEND
+  - first:
+      4: 400180
+    second: RightPinky1
+  - first:
+      4: 400182
+    second: RightPinky2
+  - first:
+      4: 400184
+    second: RightPinky3
+  - first:
+      4: 400186
+    second: RightPinkyEND
+  - first:
+      4: 400188
+    second: RightRing1
+  - first:
+      4: 400190
+    second: RightRing2
+  - first:
+      4: 400192
+    second: RightRing3
+  - first:
+      4: 400194
+    second: RightRingEND
+  - first:
+      4: 400196
+    second: RightShoulder
+  - first:
+      4: 400198
+    second: RightShoulderOrient
+  - first:
+      4: 400200
+    second: RightThumb1
+  - first:
+      4: 400202
+    second: RightThumb2
+  - first:
+      4: 400204
+    second: RightThumb3
+  - first:
+      4: 400206
+    second: RightThumbEND
+  - first:
+      4: 400208
+    second: RightUpperArm
+  - first:
+      4: 400210
+    second: Root
+  - first:
+      4: 400212
+    second: Spine1
+  - first:
+      4: 400214
+    second: Spine2
+  - first:
+      4: 400216
+    second: Template_Character
+  - first:
+      21: 2100000
+    second: lambert1
+  - first:
+      21: 2100002
+    second: Template_Character_Material
+  - first:
+      23: 2300000
+    second: pCylinder1
+  - first:
+      23: 2300002
+    second: pCylinder1 1
+  - first:
+      23: 2300004
+    second: pCylinder10
+  - first:
+      23: 2300006
+    second: pCylinder10 1
+  - first:
+      23: 2300008
+    second: pCylinder11
+  - first:
+      23: 2300010
+    second: pCylinder11 1
+  - first:
+      23: 2300012
+    second: pCylinder12
+  - first:
+      23: 2300014
+    second: pCylinder12 1
+  - first:
+      23: 2300016
+    second: pCylinder13
+  - first:
+      23: 2300018
+    second: pCylinder13 1
+  - first:
+      23: 2300020
+    second: pCylinder14
+  - first:
+      23: 2300022
+    second: pCylinder14 1
+  - first:
+      23: 2300024
+    second: pCylinder15
+  - first:
+      23: 2300026
+    second: pCylinder15 1
+  - first:
+      23: 2300028
+    second: pCylinder2
+  - first:
+      23: 2300030
+    second: pCylinder2 1
+  - first:
+      23: 2300032
+    second: pCylinder3
+  - first:
+      23: 2300034
+    second: pCylinder3 1
+  - first:
+      23: 2300036
+    second: pCylinder4
+  - first:
+      23: 2300038
+    second: pCylinder4 1
+  - first:
+      23: 2300040
+    second: pCylinder5
+  - first:
+      23: 2300042
+    second: pCylinder5 1
+  - first:
+      23: 2300044
+    second: pCylinder6
+  - first:
+      23: 2300046
+    second: pCylinder6 1
+  - first:
+      23: 2300048
+    second: pCylinder7
+  - first:
+      23: 2300050
+    second: pCylinder7 1
+  - first:
+      23: 2300052
+    second: pCylinder8
+  - first:
+      23: 2300054
+    second: pCylinder8 1
+  - first:
+      23: 2300056
+    second: pCylinder9
+  - first:
+      23: 2300058
+    second: pCylinder9 1
+  - first:
+      23: 2300060
+    second: pSphere2
+  - first:
+      23: 2300062
+    second: pSphere4
+  - first:
+      33: 3300000
+    second: pCylinder1
+  - first:
+      33: 3300002
+    second: pCylinder1 1
+  - first:
+      33: 3300004
+    second: pCylinder10
+  - first:
+      33: 3300006
+    second: pCylinder10 1
+  - first:
+      33: 3300008
+    second: pCylinder11
+  - first:
+      33: 3300010
+    second: pCylinder11 1
+  - first:
+      33: 3300012
+    second: pCylinder12
+  - first:
+      33: 3300014
+    second: pCylinder12 1
+  - first:
+      33: 3300016
+    second: pCylinder13
+  - first:
+      33: 3300018
+    second: pCylinder13 1
+  - first:
+      33: 3300020
+    second: pCylinder14
+  - first:
+      33: 3300022
+    second: pCylinder14 1
+  - first:
+      33: 3300024
+    second: pCylinder15
+  - first:
+      33: 3300026
+    second: pCylinder15 1
+  - first:
+      33: 3300028
+    second: pCylinder2
+  - first:
+      33: 3300030
+    second: pCylinder2 1
+  - first:
+      33: 3300032
+    second: pCylinder3
+  - first:
+      33: 3300034
+    second: pCylinder3 1
+  - first:
+      33: 3300036
+    second: pCylinder4
+  - first:
+      33: 3300038
+    second: pCylinder4 1
+  - first:
+      33: 3300040
+    second: pCylinder5
+  - first:
+      33: 3300042
+    second: pCylinder5 1
+  - first:
+      33: 3300044
+    second: pCylinder6
+  - first:
+      33: 3300046
+    second: pCylinder6 1
+  - first:
+      33: 3300048
+    second: pCylinder7
+  - first:
+      33: 3300050
+    second: pCylinder7 1
+  - first:
+      33: 3300052
+    second: pCylinder8
+  - first:
+      33: 3300054
+    second: pCylinder8 1
+  - first:
+      33: 3300056
+    second: pCylinder9
+  - first:
+      33: 3300058
+    second: pCylinder9 1
+  - first:
+      33: 3300060
+    second: pSphere2
+  - first:
+      33: 3300062
+    second: pSphere4
+  - first:
+      43: 4300000
+    second: pSphere4
+  - first:
+      43: 4300002
+    second: pCylinder10
+  - first:
+      43: 4300004
+    second: pCylinder11
+  - first:
+      43: 4300006
+    second: pCylinder12
+  - first:
+      43: 4300008
+    second: pCylinder7
+  - first:
+      43: 4300010
+    second: pCylinder8
+  - first:
+      43: 4300012
+    second: pCylinder9
+  - first:
+      43: 4300014
+    second: pCylinder4
+  - first:
+      43: 4300016
+    second: pCylinder5
+  - first:
+      43: 4300018
+    second: pCylinder6
+  - first:
+      43: 4300020
+    second: pCylinder1
+  - first:
+      43: 4300022
+    second: pCylinder2
+  - first:
+      43: 4300024
+    second: pCylinder3
+  - first:
+      43: 4300026
+    second: pCylinder13
+  - first:
+      43: 4300028
+    second: pCylinder14
+  - first:
+      43: 4300030
+    second: pCylinder15
+  - first:
+      43: 4300032
+    second: pSphere2
+  - first:
+      43: 4300034
+    second: pCylinder10
+  - first:
+      43: 4300036
+    second: pCylinder11
+  - first:
+      43: 4300038
+    second: pCylinder12
+  - first:
+      43: 4300040
+    second: pCylinder7
+  - first:
+      43: 4300042
+    second: pCylinder8
+  - first:
+      43: 4300044
+    second: pCylinder9
+  - first:
+      43: 4300046
+    second: pCylinder4
+  - first:
+      43: 4300048
+    second: pCylinder5
+  - first:
+      43: 4300050
+    second: pCylinder6
+  - first:
+      43: 4300052
+    second: pCylinder1
+  - first:
+      43: 4300054
+    second: pCylinder2
+  - first:
+      43: 4300056
+    second: pCylinder3
+  - first:
+      43: 4300058
+    second: pCylinder13
+  - first:
+      43: 4300060
+    second: pCylinder14
+  - first:
+      43: 4300062
+    second: pCylinder15
+  - first:
+      43: 4300064
+    second: Template_Character
+  - first:
+      74: 7400000
+    second: Run
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      137: 13700000
+    second: Template_Character
   externalObjects: {}
   materials:
-    importMaterials: 1
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -334,6 +974,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -354,6 +995,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Run
       takeName: Take 001
+      internalID: 0
       firstFrame: 0
       lastFrame: 27
       wrapMode: 0
@@ -363,7 +1005,7 @@ ModelImporter:
       loop: 0
       hasAdditiveReferencePose: 0
       loopTime: 1
-      loopBlend: 0
+      loopBlend: 1
       loopBlendOrientation: 0
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
@@ -386,25 +1028,34 @@ ModelImporter:
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
     importLights: 1
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
-    previousCalculatedGlobalScale: 0.01
-    hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -413,10 +1064,10 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 1
   humanDescription:
-    serializedVersion: 2
+    serializedVersion: 3
     human: []
     skeleton: []
     armTwist: 0.5
@@ -426,14 +1077,18 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: e789208cc0d30394583b7dff5534029e,
-    type: 3}
+  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: e789208cc0d30394583b7dff5534029e, type: 3}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
+  avatarSetup: 2
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
