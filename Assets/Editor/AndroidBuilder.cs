@@ -1,0 +1,62 @@
+// Headless Android build. Run:
+//   Unity -batchmode -quit -projectPath <proj> -executeMethod AndroidBuilder.BuildDebugApk
+// Configures the external SDK/NDK/JDK paths (installed outside Unity Hub), forces IL2CPP
+// + ARM64|ARMv7, pins target API to the installed platform, and produces Builds/StickCrowd.apk.
+using System;
+using System.IO;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEngine;
+
+public static class AndroidBuilder
+{
+    private const string SdkRoot = "/Users/a/Library/Android/sdk";
+    private const string NdkRoot = "/Users/a/Library/Android/sdk/ndk/21.3.6528147";
+    private const string JdkRoot = "/Users/a/blue-vs-orange-runner/tools/jdk8/Contents/Home";
+    private const string ApkPath = "Builds/StickCrowd.apk";
+
+    [MenuItem("Tools/Stickman/Build Debug APK")]
+    public static void BuildDebugApk()
+    {
+        try
+        {
+            foreach (var p in new[] { SdkRoot, NdkRoot, JdkRoot })
+                if (!Directory.Exists(p)) throw new Exception($"Missing toolchain dir: {p}");
+
+            // external toolchain, not Hub-embedded
+            EditorPrefs.SetBool("SdkUseEmbedded", false);
+            EditorPrefs.SetBool("NdkUseEmbedded", false);
+            EditorPrefs.SetBool("JdkUseEmbedded", false);
+            EditorPrefs.SetString("AndroidSdkRoot", SdkRoot);
+            EditorPrefs.SetString("AndroidNdkRoot", NdkRoot);
+            EditorPrefs.SetString("JdkPath", JdkRoot);
+
+            // store-capable runtime: IL2CPP + both ARM ABIs
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64 | AndroidArchitecture.ARMv7;
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)33;   // pin to installed platform-33
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel22;
+
+            var options = new BuildPlayerOptions
+            {
+                scenes = new[] { "Assets/Scenes/Level.unity" },
+                locationPathName = ApkPath,
+                target = BuildTarget.Android,
+                options = BuildOptions.Development   // debug-signed: installs directly on a phone
+            };
+
+            var report = BuildPipeline.BuildPlayer(options);
+            if (report.summary.result != BuildResult.Succeeded)
+                throw new Exception($"Build {report.summary.result}: {report.summary.totalErrors} errors");
+
+            Debug.Log($"[AndroidBuilder] SUCCESS — APK at {ApkPath} " +
+                      $"({report.summary.totalSize / (1024 * 1024)} MB, {report.summary.totalTime.TotalMinutes:F1} min)");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[AndroidBuilder] FAILED: {e}");
+            if (Application.isBatchMode) EditorApplication.Exit(1);
+            throw;
+        }
+    }
+}
