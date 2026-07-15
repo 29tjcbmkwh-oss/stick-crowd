@@ -1,0 +1,29 @@
+
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(õúý›
+fcsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(€íäÌþÿÿÿÿ
+fcsharpsquid:S1104
+"DMake this field 'private' and encapsulate it in a 'public' property.(Ôñ³Íúÿÿÿÿ
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(Ò¾’¯
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(ÐáÆµ
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(ù‚¸›
+kcsharpsquid:S2223"NChange the visibility of 'SPEED_COEFFICIENT' or make it 'const' or 'readonly'.(õúý›
+vcsharpsquid:S2223"TChange the visibility of 'SENSITIVITY_COEFFICIENT' or make it 'const' or 'readonly'.(€íäÌþÿÿÿÿ
+mcsharpsquid:S2223
+"KChange the visibility of 'CLAMP_MODIFIER' or make it 'const' or 'readonly'.(Ôñ³Íúÿÿÿÿ
+ccsharpsquid:S2223"FChange the visibility of 'MAX_SCORE' or make it 'const' or 'readonly'.(Ò¾’¯
+ccsharpsquid:S2223"FChange the visibility of 'LERP_COEF' or make it 'const' or 'readonly'.(ÐáÆµ
+fcsharpsquid:S2223"IChange the visibility of 'SWERVE_SPEED' or make it 'const' or 'readonly'.(ù‚¸›
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(õúý›
+fcsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(€íäÌþÿÿÿÿ
+fcsharpsquid:S1104
+"DMake this field 'private' and encapsulate it in a 'public' property.(Ôñ³Íúÿÿÿÿ
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(Ò¾’¯
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(ÐáÆµ
+acsharpsquid:S1104"DMake this field 'private' and encapsulate it in a 'public' property.(ù‚¸›
+kcsharpsquid:S2223"NChange the visibility of 'SPEED_COEFFICIENT' or make it 'const' or 'readonly'.(õúý›
+vcsharpsquid:S2223"TChange the visibility of 'SENSITIVITY_COEFFICIENT' or make it 'const' or 'readonly'.(€íäÌþÿÿÿÿ
+mcsharpsquid:S2223
+"KChange the visibility of 'CLAMP_MODIFIER' or make it 'const' or 'readonly'.(Ôñ³Íúÿÿÿÿ
+ccsharpsquid:S2223"FChange the visibility of 'MAX_SCORE' or make it 'const' or 'readonly'.(Ò¾’¯
+ccsharpsquid:S2223"FChange the visibility of 'LERP_COEF' or make it 'const' or 'readonly'.(ÐáÆµ
+fcsharpsquid:S2223"IChange the visibility of 'SWERVE_SPEED' or make it 'const' or 'readonly'.(ù‚¸›
