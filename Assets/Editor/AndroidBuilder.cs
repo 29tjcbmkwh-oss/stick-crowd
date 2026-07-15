@@ -13,7 +13,8 @@ public static class AndroidBuilder
     private const string SdkRoot = "/Users/a/Library/Android/sdk";
     private const string NdkRoot = "/Users/a/Library/Android/sdk/ndk/21.3.6528147";
     private const string JdkRoot = "/Users/a/blue-vs-orange-runner/tools/jdk8/Contents/Home";
-    private const string ApkPath = "Builds/StickCrowd.apk";
+    // absolute: GUI-launched editors have an unpredictable working directory
+    private const string ApkPath = "/Users/a/blue-vs-orange-runner/base/Builds/StickCrowd.apk";
 
     [MenuItem("Tools/Stickman/Build Debug APK")]
     public static void BuildDebugApk()
@@ -48,6 +49,10 @@ public static class AndroidBuilder
             var report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result != BuildResult.Succeeded)
                 throw new Exception($"Build {report.summary.result}: {report.summary.totalErrors} errors");
+            // Unity 2021 can report Succeeded even when Android postprocess throws
+            // ("Build target 'Android' not supported") — trust only the artifact.
+            if (!File.Exists(ApkPath))
+                throw new Exception($"BuildReport says Succeeded but no APK at {ApkPath} — check log for postprocess exceptions");
 
             Debug.Log($"[AndroidBuilder] SUCCESS — APK at {ApkPath} " +
                       $"({report.summary.totalSize / (1024 * 1024)} MB, {report.summary.totalTime.TotalMinutes:F1} min)");
