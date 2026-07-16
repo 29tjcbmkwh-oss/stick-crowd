@@ -115,9 +115,34 @@ Match this TikTok reference the owner provided (@jaybigamer1 "Blue vs Orange sti
   AdConfig (test ids, live placeholders), AdMobService (guarded by `ADMOB_ENABLED`), AdManager
   (auto-bootstrapping singleton). Interstitial wired into `GameFlowManager.GameOver()`.
   See `base/Assets/_Scripts/Ads/README_ADS.md` for the import/define/live-id steps.
-- ⏳ BLOCKER: Unity 2021.3.7f1 not installed → cannot import stickman model or build yet.
-- ⏳ TODO in Unity: import Sketchfab stickman as crowd/boss; Blue-vs-Orange recolor; import
-  Google Mobile Ads SDK + add `ADMOB_ENABLED`; Android build; then iOS.
+- ✅ Unity 2021.3.7f1 installed + licensed (Personal via Hub; access token cached to 2027).
+  Editor registered in Unity Hub; project added to Hub. NOTE: editor is Intel/Rosetta.
+- ✅ **Stickman swap DONE + verified in Play mode** (blue stickman idles on track; boss orange 2.2x).
+  Character = CountMasters (MIT) "Asset Unlock" rig, NOT the Sketchfab model (owner never
+  downloaded it; MIT fallback used instead — update CREDITS if Sketchfab added later).
+  StickmanSetup.cs auto-scales rig to collider height and snaps feet to unit origin plane.
+- ✅ Android toolchain assembled headlessly: AndroidPlayer module installed into
+  /Applications/Unity/PlaybackEngines; NDK r21d (21.3.6528147) + platform-33 in
+  ~/Library/Android/sdk; Temurin JDK8 at /Users/a/blue-vs-orange-runner/tools/jdk8.
+- ✅ **APK BUILT 2026-07-16** — `base/Builds/StickCrowd.apk` (34 MB, IL2CPP, arm64-v8a +
+  armeabi-v7a, debug-signed, target SDK 33). Copy on Desktop. Build time ~7.5 min.
+- **How to rebuild (any agent/teammate):** open project in Unity 2021.3.7f1 →
+  `Tools > Stickman > Build Debug APK`; or create a file named `autobuild-request` in the
+  project root and open/focus the editor (AutoBuildTrigger builds on load). Batch mode does
+  NOT work (Hub entitlement license unavailable to CLI-spawned editors — verified repeatedly).
+- **Working toolchain matrix (do not "upgrade" any of these):** JDK8 (../tools/jdk8),
+  cmdline-tools 2.1 (Java-8 compatible — newer versions crash under Unity's JDK8 with JNI
+  errors), build-tools 30.0.3 (Unity 2021's stated max), platform-33, NDK r21d
+  (sdk/ndk/21.3.6528147). Paths applied in code via AndroidExternalToolsSettings
+  (EditorPrefs writes do NOT register).
+- ⚠️ **16 KB page-size flag (for production later):** Unity 2021 emits 4KB-aligned native
+  libs. New Android 16KB-page devices/images refuse to load them ("Unable to initialize the
+  Unity Engine" on the API-37 ps16k emulator). Real 4KB phones are fine. Production/Play
+  longer-term fix = engine upgrade to Unity 2022.3 LTS+ (which emits 16KB-aligned libs).
+- ⏳ NEXT (owner directive 2026-07-16): placeholders stay for now; Play Console = team's job.
+  Focus on the GAME: full playability audit (start→gates→battle→win/lose→restart), fix what's
+  broken, import Google Mobile Ads SDK + ADMOB_ENABLED + real ad unit IDs (owner has AdMob),
+  make it genuinely monetizable. Then iOS later.
 
 ## 9. Open decisions (tracked in chat, to be finalized)
 - Ad SDK / mediation choice.
