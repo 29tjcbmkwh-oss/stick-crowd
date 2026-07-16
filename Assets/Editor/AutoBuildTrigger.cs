@@ -1,9 +1,12 @@
-// Runs once the editor finishes loading scripts. Marker files at the project root let an
-// external process (or a teammate/agent) request work from a GUI editor without menu
-// interaction — the next domain reload / editor focus consumes them:
-//   autobuild-request     -> build the Android APK
+// Runs marker-requested work from a GUI editor without menu interaction. Markers at the
+// project root:
 //   apply-theme-request   -> run the Blue-vs-Orange theme pass
-// Theme runs before build when both markers are present.
+//   autobuild-request     -> build the Android APK
+//
+// Uses EditorApplication.update (re-subscribed on every domain reload) rather than
+// delayCall: importing the AdMob SDK / EDM4U triggers repeated domain reloads that DISCARD
+// pending delayCalls before they fire, so the build never started. Polling update survives
+// reloads and fires only once the editor is idle (not compiling/updating).
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -13,24 +16,36 @@ public static class AutoBuildTrigger
 {
     private const string BuildMarker = "/Users/a/blue-vs-orange-runner/base/autobuild-request";
     private const string ThemeMarker = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
+    private static bool _fired;
 
     static AutoBuildTrigger()
     {
-        if (!File.Exists(BuildMarker) && !File.Exists(ThemeMarker)) return;
-        EditorApplication.delayCall += () =>
+        EditorApplication.update += Tick;
+    }
+
+    private static void Tick()
+    {
+        if (_fired) return;
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+
+        var theme = File.Exists(ThemeMarker);
+        var build = File.Exists(BuildMarker);
+        if (!theme && !build) return;
+
+        _fired = true;
+        EditorApplication.update -= Tick;
+
+        if (theme)
         {
-            if (File.Exists(ThemeMarker))
-            {
-                File.Delete(ThemeMarker);
-                Debug.Log("[AutoBuildTrigger] theme marker found — applying theme");
-                ThemeSetup.Run();
-            }
-            if (File.Exists(BuildMarker))
-            {
-                File.Delete(BuildMarker);
-                Debug.Log("[AutoBuildTrigger] build marker found — starting Android build");
-                AndroidBuilder.BuildDebugApk();
-            }
-        };
+            File.Delete(ThemeMarker);
+            Debug.Log("[AutoBuildTrigger] theme marker found — applying theme");
+            ThemeSetup.Run();
+        }
+        if (build)
+        {
+            File.Delete(BuildMarker);
+            Debug.Log("[AutoBuildTrigger] build marker found — starting Android build");
+            AndroidBuilder.BuildDebugApk();
+        }
     }
 }
