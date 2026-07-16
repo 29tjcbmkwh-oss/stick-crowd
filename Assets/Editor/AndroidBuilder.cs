@@ -24,13 +24,14 @@ public static class AndroidBuilder
             foreach (var p in new[] { SdkRoot, NdkRoot, JdkRoot })
                 if (!Directory.Exists(p)) throw new Exception($"Missing toolchain dir: {p}");
 
-            // external toolchain, not Hub-embedded
-            EditorPrefs.SetBool("SdkUseEmbedded", false);
-            EditorPrefs.SetBool("NdkUseEmbedded", false);
-            EditorPrefs.SetBool("JdkUseEmbedded", false);
-            EditorPrefs.SetString("AndroidSdkRoot", SdkRoot);
-            EditorPrefs.SetString("AndroidNdkRoot", NdkRoot);
-            EditorPrefs.SetString("JdkPath", JdkRoot);
+            // Official API — identical to setting Preferences > External Tools by hand.
+            // (Plain EditorPrefs writes proved to not persist / not be read by the SDK detector.)
+            UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath = SdkRoot;
+            UnityEditor.Android.AndroidExternalToolsSettings.ndkRootPath = NdkRoot;
+            UnityEditor.Android.AndroidExternalToolsSettings.jdkRootPath = JdkRoot;
+            Debug.Log($"[AndroidBuilder] tool paths applied — sdk:{UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath} " +
+                      $"ndk:{UnityEditor.Android.AndroidExternalToolsSettings.ndkRootPath} " +
+                      $"jdk:{UnityEditor.Android.AndroidExternalToolsSettings.jdkRootPath}");
 
             // store-capable runtime: IL2CPP + both ARM ABIs
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
