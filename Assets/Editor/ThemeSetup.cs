@@ -222,13 +222,18 @@ public static class ThemeSetup
         foreach (var img in UnityEngine.Object.FindObjectsOfType<Image>(true))
         {
             var n = img.gameObject.name.ToLowerInvariant();
+            var isButton = n.Contains("button") || n.Contains("restart") || n.Contains("start");
             if (n.Contains("panelback") || n.Contains("allpanels"))
                 img.color = dim;                              // was solid white, hid the game
-            else if (n.Contains("startbutton") || n.Contains("restart") || n.Contains("button"))
+            else if (isButton)
                 img.color = uiBlue;
             else if (n.Contains("progressbar") || n.Contains("bar"))
                 img.color = n.Contains("back") ? chipDark : uiOrange;
-            else if (n.Contains("levelback") || n == "image")
+            else if (n.Contains("levelback") || n.Contains("count") || n.Contains("score") || n == "image")
+                img.color = chipDark;
+            // Catch-all: any leftover near-white placeholder panel (e.g. the score chip that
+            // rendered white-on-white on device) becomes a dark HUD chip.
+            else if (img.color.r > 0.85f && img.color.g > 0.85f && img.color.b > 0.85f)
                 img.color = chipDark;
             EditorUtility.SetDirty(img);
         }
@@ -239,8 +244,11 @@ public static class ThemeSetup
             t.fontStyle = FontStyles.Bold;
             if (n.Contains("tap"))       { t.text = "TAP TO PLAY"; t.color = Color.white; }
             else if (n.Contains("level")) t.color = Color.white;
-            else if (n.Contains("count") || n.Contains("score")) t.color = uiOrange;
+            else if (n.Contains("count") || n.Contains("score")) t.color = Color.white;
             else                          t.color = Color.white;
+            // label must render ABOVE its button/chip background → make it the last sibling
+            if (n.Contains("tap") || n.Contains("count") || n.Contains("score"))
+                t.transform.SetAsLastSibling();
             EditorUtility.SetDirty(t);
         }
         foreach (var t in UnityEngine.Object.FindObjectsOfType<Text>(true))
