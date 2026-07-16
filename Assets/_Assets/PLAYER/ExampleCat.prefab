@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83dfd2a7da5f43768ed6ba225a366e09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationTarget: {fileID: 0}
+  rotationTarget: {fileID: 7414516050786215698}
 --- !u!54 &1179908833423862874
 Rigidbody:
   m_ObjectHideFlags: 0
