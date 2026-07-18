@@ -1,7 +1,7 @@
 # Project Vision — "Blue vs Orange" Stickman Runner (working title)
 
 > AI-readable master brief. A fresh session should be able to read this file alone and
-> understand the entire project without re-asking the owner. Last updated: 2026-07-15.
+> understand the entire project without re-asking the owner. Last updated: 2026-07-18.
 
 ## 1. One-line summary
 A 3D "hyper-casual" endless runner for mobile: a simple stickman auto-runs forward down
@@ -106,15 +106,16 @@ Match this TikTok reference the owner provided (@jaybigamer1 "Blue vs Orange sti
 - Online backend, user accounts, cloud saves, leaderboards (local high score only).
 - Cosmetic IAP shop (possible later; not v1).
 
-## 8b. BUILD STATUS (updated 2026-07-15)
+## 8b. BUILD STATUS (updated 2026-07-18)
 - ✅ Base cloned to `./base` (crowd-runner-clone). Asset donor in `./reference/countmasters`.
 - ✅ Rebranded: productName "Stick Crowd", id `com.yourstudio.stickcrowd` (PLACEHOLDERS — owner
   to supply real studio + game name).
 - ✅ `base/CREDITS.md` added (Dalçık MIT + Zakaria CC-BY).
-- ✅ **Ad module built** (headless): `base/Assets/_Scripts/Ads/` — IAdService + NullAdService,
-  AdConfig (test ids, live placeholders), AdMobService (guarded by `ADMOB_ENABLED`), AdManager
-  (auto-bootstrapping singleton). Interstitial wired into `GameFlowManager.GameOver()`.
-  See `base/Assets/_Scripts/Ads/README_ADS.md` for the import/define/live-id steps.
+- ✅ **Ad module enabled in the real APK:** `base/Assets/_Scripts/Ads/` — IAdService,
+  AdMobService and AdManager. The Google Mobile Ads and UMP dependencies are materialized
+  locally under `Assets/Plugins/Android`, and `ADMOB_ENABLED` remains on. Interstitial loss
+  ads plus optional rewarded retry and 2× coin flows use Google's official test IDs until
+  the owner supplies the production Android app/ad-unit IDs.
 - ✅ Unity 2021.3.7f1 installed + licensed (Personal via Hub; access token cached to 2027).
   Editor registered in Unity Hub; project added to Hub. NOTE: editor is Intel/Rosetta.
 - ✅ **Stickman swap DONE + verified in Play mode** (blue stickman idles on track; boss orange 2.2x).
@@ -124,8 +125,22 @@ Match this TikTok reference the owner provided (@jaybigamer1 "Blue vs Orange sti
 - ✅ Android toolchain assembled headlessly: AndroidPlayer module installed into
   /Applications/Unity/PlaybackEngines; NDK r21d (21.3.6528147) + platform-33 in
   ~/Library/Android/sdk; Temurin JDK8 at /Users/a/blue-vs-orange-runner/tools/jdk8.
-- ✅ **APK BUILT 2026-07-16** — `base/Builds/StickCrowd.apk` (34 MB, IL2CPP, arm64-v8a +
-  armeabi-v7a, debug-signed, target SDK 33). Copy on Desktop. Build time ~7.5 min.
+- ✅ **Reusable gameplay foundation complete:** mini-battle count fix; null-safe gates,
+  obstacles and crowd formation; deterministic ten-variation progression; persistent coin
+  wallet; first-run tutorial; rewarded second chance; rewarded 2× win reward; gate/battle/
+  win/lose juice; and reliable level restart/advance paths.
+- ✅ **Fresh ads-enabled APK built and verified 2026-07-18** —
+  `base/Builds/StickCrowd.apk` (52,497,327 bytes, IL2CPP, arm64-v8a + armeabi-v7a,
+  debug-signed, target SDK 33, 29 Unity data entries). SHA-256:
+  `ddc1b69b1163288fd714b7b99987b7bfc636cebed136aa908383ee63254ac2cb`.
+- ✅ **Android 14 end-to-end verification:** clean install, first-run tutorial, themed gate run,
+  Google rewarded Test Ad, safe return into a five-runner second chance, completed boss run,
+  28-coin wallet award, Level 2 advancement, and Level 2/wallet persistence after a cold
+  process relaunch. No fatal Android/JNI/Unity exception remained. Evidence is stored in
+  ignored local build output at `base/Builds/verification/`.
+- ✅ Unity's obsolete Android phone-call listener crash after rewarded ads is avoided by
+  enabling `muteOtherAudioSources`; this should be revalidated after the planned Unity LTS
+  upgrade.
 - **How to rebuild (any agent/teammate):** open project in Unity 2021.3.7f1 →
   `Tools > Stickman > Build Debug APK`; or create a file named `autobuild-request` in the
   project root and open/focus the editor (AutoBuildTrigger builds on load). Batch mode does
@@ -139,10 +154,10 @@ Match this TikTok reference the owner provided (@jaybigamer1 "Blue vs Orange sti
   libs. New Android 16KB-page devices/images refuse to load them ("Unable to initialize the
   Unity Engine" on the API-37 ps16k emulator). Real 4KB phones are fine. Production/Play
   longer-term fix = engine upgrade to Unity 2022.3 LTS+ (which emits 16KB-aligned libs).
-- ⏳ NEXT (owner directive 2026-07-16): placeholders stay for now; Play Console = team's job.
-  Focus on the GAME: full playability audit (start→gates→battle→win/lose→restart), fix what's
-  broken, import Google Mobile Ads SDK + ADMOB_ENABLED + real ad unit IDs (owner has AdMob),
-  make it genuinely monetizable. Then iOS later.
+- ⏳ **Production blockers intentionally left explicit:** replace `YourStudio`, Stick Crowd
+  working title and `com.yourstudio.stickcrowd`; provide production AdMob Android app and ad
+  unit IDs; upgrade from Unity 2021.3.7f1 to a supported LTS with 16 KB Android page-size
+  output; then raise the target SDK and produce signed Play/App Store release builds.
 
 ## 9. Open decisions (tracked in chat, to be finalized)
 - Ad SDK / mediation choice.

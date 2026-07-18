@@ -19,42 +19,37 @@ namespace _Scripts.Controllers
 
         private void OnTriggerEnter(Collider other)
         {
+            RadialFormation playerFormation = other.GetComponentInParent<RadialFormation>();
+            if (playerFormation == null || playerFormation.amount <= 0) return;
+
             AudioManager.Instance.PlayFightSound(AudioManager.Instance.cartoonFightSound );
             this.GetComponent<Collider>().enabled = false;
             GameFlowManager.Instance.UpdateGameState(GameState.MiniBattle);
             createdParticleSystem = Instantiate(bossFightParticle).gameObject;
             createdParticleSystem.transform.localScale = new Vector3(3, 3, 3);
             createdParticleSystem.transform.position = this.transform.position;
-            StartCoroutine(DecreaseArmyOverTime(other.transform.parent.GetComponent<RadialFormation>()));
+            StartCoroutine(DecreaseArmyOverTime(playerFormation));
         }
 
-        private IEnumerator DecreaseArmyOverTime(RadialFormation otherRadialFormation)
+        private IEnumerator DecreaseArmyOverTime(RadialFormation playerFormation)
         {
-            while (otherRadialFormation.amount != 0 && otherRadialFormation.amount  != 0) 
+            corridorEnemyCount = Mathf.Max(0, corridorEnemyCount);
+
+            while (corridorEnemyCount > 0 && playerFormation.amount > 0)
             {
-                corridorEnemyCount -= 1;
-                otherRadialFormation.amount  -= 1;
-                print("enemy count is "  + corridorEnemyCount +"and player amount is " + otherRadialFormation.amount );
+                corridorEnemyCount = Mathf.Max(0, corridorEnemyCount - 1);
+                playerFormation.amount = Mathf.Max(0, playerFormation.amount - 1);
+                GameFlowManager.Instance.SetPlayerCount(playerFormation.amount);
+                UIManager.Instance.SetPlayerCountText(playerFormation.amount);
 
                 yield return _getWait;
-                
-                if (corridorEnemyCount == 0)
-                {
-                    AudioManager.Instance.StopFightSound();
-                    GameFlowManager.Instance.UpdateGameState(GameState.Game);
-                    this.gameObject.SetActive(false);
-                    Destroy(createdParticleSystem);
-                    break;
-                }  
-                if (otherRadialFormation.amount == 0)
-                {
-                    AudioManager.Instance.StopFightSound();
-                    GameFlowManager.Instance.UpdateGameState(GameState.Lose);
-                    this.gameObject.SetActive(false);
-                    Destroy(createdParticleSystem);
-                    break;
-                }
             }
+
+            AudioManager.Instance.StopFightSound();
+            GameFlowManager.Instance.UpdateGameState(
+                playerFormation.amount > 0 ? GameState.Game : GameState.Lose);
+            gameObject.SetActive(false);
+            if (createdParticleSystem != null) Destroy(createdParticleSystem);
         }
     }
 }

@@ -12,26 +12,29 @@ namespace _Scripts.Controllers
         public int score  = 0 ;
         public void CorridorEffect(Corridor corridor, GameObject other)
         {
+            RadialFormation formation = other.GetComponentInParent<RadialFormation>();
+            if (formation == null) return;
+
             switch (corridor.GetCorridorType())
             {
                 case Constants.CorridorTypes.Increase:
-                    other.transform.parent.GetComponent<RadialFormation>().amount += corridor.increaseAmount;
+                    formation.amount += corridor.increaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
                     print("INCREASING ARMY AMOUNT");
                     break; 
                 case Constants.CorridorTypes.Decrease:
-                    other.transform.parent.GetComponent<RadialFormation>().amount -=  corridor.decreaseAmount;
+                    formation.amount -= corridor.decreaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
 
                     print("DECREASE ARMY AMOUNT");
                     break;
                 case Constants.CorridorTypes.Multiply:
-                    other.transform.parent.GetComponent<RadialFormation>().amount *= corridor. multiplyAmount;
+                    formation.amount *= Mathf.Max(1, corridor.multiplyAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
                     print("Multiply ARMY AMOUNT");
                     break;
                 case Constants.CorridorTypes.Divide:
-                    other.transform.parent.GetComponent<RadialFormation>().amount /= corridor. divideAmount;
+                    formation.amount /= Mathf.Max(1, corridor.divideAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
                     print("Divide ARMY AMOUNT");
                     break;
@@ -39,17 +42,23 @@ namespace _Scripts.Controllers
                     Debug.Log("TRIGGER EXCEPTION");
                     break;
             }
-           
+
+            formation.amount = Mathf.Max(0, formation.amount);
+
+            GameJuice.OnGatePassed(corridor,
+                corridor.GetCorridorType() is Constants.CorridorTypes.Increase
+                                            or Constants.CorridorTypes.Multiply);
+
             HapticPatterns.PlayPreset(HapticPatterns.PresetType.SoftImpact);
 
-            score += other.transform.parent.GetComponent<RadialFormation>().amount;
+            score += formation.amount;
             ScoreManager.Instance.upperScoreText.text = score.ToString();
             
-            GameFlowManager.Instance.SetPlayerCount(other.transform.parent.GetComponent<RadialFormation>().amount);
+            GameFlowManager.Instance.SetPlayerCount(formation.amount);
             // Update UI
-            UIManager.Instance.SetPlayerCountText(other.transform.parent.GetComponent<RadialFormation>().amount);
+            UIManager.Instance.SetPlayerCountText(formation.amount);
             // Game Over check
-            if (other.transform.parent.GetComponent<RadialFormation>().amount <= 0)
+            if (formation.amount <= 0)
             {
                 GameFlowManager.Instance.UpdateGameState(GameState.Lose);
             }

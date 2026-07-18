@@ -17,6 +17,7 @@ namespace _Scripts.Models
         public Constants.CorridorTypes _corridorType;
         [HideInInspector] public MeshRenderer meshRenderer;
         public BoxCollider neighbourCorridorCollider;
+        private bool _used;
 
         private void Awake()
         {
@@ -31,13 +32,15 @@ namespace _Scripts.Models
         
         private void OnTriggerExit(Collider other)
         {
-            if (!other.CompareTag("Cat")) return;
+            if (_used || !other.CompareTag("Cat")) return;
+            _used = true;
 
             CorridorController.Instance.CorridorEffect(this, other.gameObject);
 
             // Disable Corridors
-            neighbourCorridorCollider.enabled = false;
-            this.GetComponent<BoxCollider>().enabled = false;
+            if (neighbourCorridorCollider != null) neighbourCorridorCollider.enabled = false;
+            BoxCollider ownCollider = GetComponent<BoxCollider>();
+            if (ownCollider != null) ownCollider.enabled = false;
             
         }
 

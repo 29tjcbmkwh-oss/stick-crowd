@@ -34,7 +34,7 @@ namespace _Scripts.Core
         private void Start()
         {
             GameFlowManager.onGameStateChange += GameFlowManagerOnGameStateChange;
-            levelText.text = "level " + (SceneManager.GetActiveScene().buildIndex );
+            levelText.text = "LEVEL " + (PlayerPrefs.GetInt("level", 0) + 1);
         }
 
         private void OnDestroy()
@@ -73,7 +73,7 @@ namespace _Scripts.Core
             upperPanel.SetActive(false);
             allPanelsBack.SetActive(true);
             startButton.SetActive(false);
-            if (GameFlowManager.Instance.state != GameState.Start && GameFlowManager.Instance.state != GameState.Battle )
+            if (GameFlowManager.Instance.state == GameState.Game)
             {
                 GameFlowManager.Instance.UpdateGameState(GameState.Pause);
             }
@@ -91,7 +91,7 @@ namespace _Scripts.Core
             
             startButton.SetActive(GameFlowManager.Instance.state == GameState.Start);
 
-            if (GameFlowManager.Instance.state != GameState.Start && GameFlowManager.Instance.state != GameState.Battle)
+            if (GameFlowManager.Instance.state == GameState.Pause)
             {
                 GameFlowManager.Instance.UpdateGameState(GameState.Game);
             }
@@ -125,6 +125,14 @@ namespace _Scripts.Core
         public void NextLevelButton()
         {
             GameFlowManager.Instance.LoadNewLevel();
+        }
+
+        public void HideOutcomePanels()
+        {
+            if (gameOverPanel != null) gameOverPanel.SetActive(false);
+            if (gameWinPanel != null) gameWinPanel.SetActive(false);
+            if (allPanelsBack != null) allPanelsBack.SetActive(false);
+            if (upperPanel != null) upperPanel.SetActive(true);
         }
         
         bool currentMusicState;

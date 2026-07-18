@@ -16,20 +16,42 @@ namespace _Scripts.Core
         
         public GameState state;
         private LevelController levelController; 
+        private bool _lossHandled;
+        private bool _winHandled;
+        private bool _reviveUsed;
+        private bool _doubleRewardUsed;
+        private static bool s_reviveConsumedForAttempt;
+        private static int s_rewardedRetryArmySize;
         public static event Action<GameState> onGameStateChange;
+
+        public bool CanRevive => _lossHandled && !_reviveUsed;
+        public bool CanDoubleReward => _winHandled && !_doubleRewardUsed &&
+                                       ScoreManager.Instance != null && ScoreManager.Instance.CanDoubleLastReward;
         
         private void Start()
         {
             levelController = this.GetComponent<LevelController>();
             _radialFormation = player.GetComponent<RadialFormation>();
+            _reviveUsed = s_reviveConsumedForAttempt;
+            if (s_rewardedRetryArmySize > 0)
+            {
+                _radialFormation.amount = s_rewardedRetryArmySize;
+                s_rewardedRetryArmySize = 0;
+            }
             playerCount = _radialFormation.amount;
+            if (UIManager.Instance != null)
+                UIManager.Instance.SetPlayerCountText(playerCount);
             UpdateGameState(GameState.Start);
             AudioManager.Instance.PlayTheme(AudioManager.Instance.mainThemeGame);
         }
 
         private void GameOver()
         {
+            if (_lossHandled) return;
+            _lossHandled = true;
             PauseGameFlow();
+            _radialFormation.amount = 0;
+            playerCount = 0;
             UIManager.Instance.playerCountText.text = "0";
             UIManager.Instance.ActivatePopup(UIManager.Instance.gameOverPanel);
             AudioManager.Instance.PlayOneShot(AudioManager.Instance.gameOverSound);
@@ -40,6 +62,11 @@ namespace _Scripts.Core
 
         private void GameWin()
         {
+            if (_winHandled) return;
+            _winHandled = true;
+            ResetReviveAttempt();
+            PauseGameFlow();
+            ScoreManager.Instance.EnsureRunReward();
             UIManager.Instance.ActivatePopup(UIManager.Instance.gameWinPanel);
             AudioManager.Instance.PlayOneShot(AudioManager.Instance.gameWinSound);
         }
@@ -47,13 +74,57 @@ namespace _Scripts.Core
         public void RestartGame()
         {
             print("Restart this level");
+            ResetReviveAttempt();
             levelController.RestartLevel();
         }
 
         public void LoadNewLevel()
         {
+            ResetReviveAttempt();
             levelController.NextLevel();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void TryRevive(Action<bool> completed = null)
+        {
+            if (!CanRevive)
+            {
+                completed?.Invoke(false);
+                return;
+            }
+
+            AdManager.Instance.ShowRewarded(() =>
+            {
+                _reviveUsed = true;
+                s_reviveConsumedForAttempt = true;
+                s_rewardedRetryArmySize = 5;
+                completed?.Invoke(true);
+                // Restarting is safer and fairer than attempting to rebuild a
+                // destroyed crowd inside the boss camera rig. The rewarded
+                // retry begins with five runners and cannot be chained again.
+                levelController.RestartLevel();
+            }, () => completed?.Invoke(false));
+        }
+
+        private static void ResetReviveAttempt()
+        {
+            s_reviveConsumedForAttempt = false;
+            s_rewardedRetryArmySize = 0;
+        }
+
+        public void TryDoubleWinReward(Action<bool> completed = null)
+        {
+            if (!CanDoubleReward)
+            {
+                completed?.Invoke(false);
+                return;
+            }
+
+            AdManager.Instance.ShowRewarded(() =>
+            {
+                bool doubled = ScoreManager.Instance.DoubleLastReward();
+                _doubleRewardUsed = doubled;
+                completed?.Invoke(doubled);
+            }, () => completed?.Invoke(false));
         }
         
         public void UpdateGameState(GameState newState)
@@ -97,20 +168,20 @@ namespace _Scripts.Core
 
         private void PauseGameFlow()
         {
-            for (int i = 1; i < player.transform.childCount ; i++)
-            {
-                player.transform.GetChild(i).GetComponent<Cat>().ControlAnimationState(0);
-            }
-            player.GetComponent<ArmyMovementController>().isGamePaused = true;
+            if (player == null) return;
+            foreach (Cat cat in player.GetComponentsInChildren<Cat>(true))
+                cat.ControlAnimationState(0);
+            ArmyMovementController movement = player.GetComponent<ArmyMovementController>();
+            if (movement != null) movement.isGamePaused = true;
         }
 
         private void ContinueGameFlow()
         {
-            for (int i = 1; i < player.transform.childCount ; i++)
-            {
-                player.transform.GetChild(i).GetComponent<Cat>().ControlAnimationState(1);
-            }
-            player.GetComponent<ArmyMovementController>().isGamePaused = false;
+            if (player == null) return;
+            foreach (Cat cat in player.GetComponentsInChildren<Cat>(true))
+                cat.ControlAnimationState(1);
+            ArmyMovementController movement = player.GetComponent<ArmyMovementController>();
+            if (movement != null) movement.isGamePaused = false;
         }
 
         private void GameStart()
