@@ -70,11 +70,17 @@ namespace _Scripts.Controllers
         
         private void RotateAnimatedRig(float dir)
         {
-            for (int i = 1; i < this.transform.childCount; i++)
-            {
-                Cat cat = transform.GetChild(i).GetComponent<Cat>();
-                cat.rotationTarget.transform.rotation = Quaternion.Euler(new Vector3(0, Mathf.Clamp(dir,-100F,100F),0));
+            // Smooth turn instead of snapping: face the direction of travel with a slight
+            // lean, easing back to forward. Reads far better than the instant hard rotation.
+            float targetYaw = Mathf.Clamp(dir, -100F, 100F) * 0.6F;
+            float lean = Mathf.Clamp(dir, -60F, 60F) * 0.12F;
+            Quaternion target = Quaternion.Euler(0F, targetYaw, -lean);
 
+            foreach (Cat cat in GetComponentsInChildren<Cat>())
+            {
+                if (cat.rotationTarget == null) continue;
+                Transform rig = cat.rotationTarget.transform;
+                rig.localRotation = Quaternion.Slerp(rig.localRotation, target, 12F * Time.deltaTime);
             }
         }
 

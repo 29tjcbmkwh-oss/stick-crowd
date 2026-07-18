@@ -10,7 +10,6 @@ Material:
   m_Name: Mat_GateBlue
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ValidKeywords:
-  - _ALPHABLEND_ON
   - _ALPHAPREMULTIPLY_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -74,10 +73,10 @@ Material:
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 0.2, g: 0.45, b: 1, a: 0.55}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 0.07, g: 0.175, b: 0.35, a: 0.35}
   m_BuildTextureStacks: []

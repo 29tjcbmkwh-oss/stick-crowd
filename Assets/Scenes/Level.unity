@@ -15,18 +15,18 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
   m_Fog: 1
-  m_FogColor: {r: 0.34901962, g: 0.4039216, b: 0.6666667, a: 1}
+  m_FogColor: {r: 0.78, g: 0.9, b: 1, a: 1}
   m_FogMode: 1
   m_FogDensity: 0.1
-  m_LinearFogStart: 0
-  m_LinearFogEnd: 35
-  m_AmbientSkyColor: {r: 1, g: 0.85534585, b: 0.8931243, a: 1}
-  m_AmbientEquatorColor: {r: 0, g: 0, b: 0, a: 1}
-  m_AmbientGroundColor: {r: 1, g: 0.6666667, b: 0, a: 1}
+  m_LinearFogStart: 22
+  m_LinearFogEnd: 95
+  m_AmbientSkyColor: {r: 0.72, g: 0.82, b: 1, a: 1}
+  m_AmbientEquatorColor: {r: 0.55, g: 0.6, b: 0.72, a: 1}
+  m_AmbientGroundColor: {r: 0.3, g: 0.33, b: 0.42, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 3
+  m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: e60962c1b674b43449efd7c2297ac70e, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1b3b9fbba3a6e45a49a6ce2772da7dfa, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 0}
+  m_Sun: {fileID: 2108709910}
   m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
@@ -1313,7 +1313,7 @@ Camera:
   m_GameObject: {fileID: 1668081801}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.13, g: 0.78, b: 0.29, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -1490,8 +1490,8 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 0.75
+  m_Color: {r: 1, g: 0.97, b: 0.9, a: 1}
+  m_Intensity: 1.15
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -1548,7 +1548,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2108709909}
-  m_LocalRotation: {x: 0.5872348, y: -0.026802076, z: -0.19827911, w: 0.7842974}
+  m_LocalRotation: {x: 0.38791165, y: -0.27470842, z: 0.12230807, w: 0.8712638}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

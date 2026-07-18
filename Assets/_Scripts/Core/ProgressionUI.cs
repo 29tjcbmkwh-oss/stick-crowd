@@ -29,6 +29,7 @@ namespace _Scripts.Core
         {
             yield return null;
             BuildUi();
+            HideCornerClutter();
             GameFlowManager.onGameStateChange += HandleGameState;
             ScoreManager.CoinsChanged += HandleCoinsChanged;
             HandleCoinsChanged(ScoreManager.Instance != null ? ScoreManager.Instance.Coins : 0);
@@ -43,9 +44,29 @@ namespace _Scripts.Core
 
         private void Update()
         {
-            if (_tutorialText == null || !_tutorialText.gameObject.activeSelf) return;
-            if (_state == GameState.Game && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
+            if (_tutorialText != null && _tutorialText.gameObject.activeSelf &&
+                _state == GameState.Game && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 CompleteTutorial();
+        }
+
+        // Position-based, name-agnostic: hide any template image sitting in the extreme top-left
+        // or top-right corner (the leftover boxes), while never touching my own HUD. Robust to
+        // whatever those objects are actually named — hiding by name proved unreliable.
+        private void HideCornerClutter()
+        {
+            var corners = new Vector3[4];
+            foreach (Image img in FindObjectsOfType<Image>())
+            {
+                if (img.transform.IsChildOf(transform)) continue;   // never touch my own HUD
+                img.rectTransform.GetWorldCorners(corners);          // screen pixels for overlay canvas
+                Vector3 c = (corners[0] + corners[2]) * 0.5f;
+                float x = c.x / Screen.width, y = c.y / Screen.height;
+                if (y > 0.85f && (x < 0.30f || x > 0.70f))
+                {
+                    img.gameObject.SetActive(false);
+                    Debug.Log($"[ProgressionUI] hid corner box: {img.name} (x={x:F2} y={y:F2})");
+                }
+            }
         }
 
         private void BuildUi()
@@ -59,9 +80,24 @@ namespace _Scripts.Core
             scaler.matchWidthOrHeight = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
-            _coinText = CreateText("Coins", transform, 32, TextAnchor.MiddleRight);
-            SetRect(_coinText.rectTransform, new Vector2(1, 1), new Vector2(1, 1),
-                new Vector2(-35, -135), new Vector2(360, 70));
+            // Gold coin pill, top-left, on its own dark background so it always reads.
+            GameObject coinPill = new GameObject("CoinPill", typeof(RectTransform), typeof(Image));
+            coinPill.transform.SetParent(transform, false);
+            coinPill.GetComponent<Image>().color = new Color(0.06f, 0.07f, 0.11f, 0.85f);
+            SetRect((RectTransform)coinPill.transform, new Vector2(0, 1), new Vector2(0, 1),
+                new Vector2(210, -70), new Vector2(340, 90));
+
+            GameObject coinDot = new GameObject("CoinDot", typeof(RectTransform), typeof(Image));
+            coinDot.transform.SetParent(coinPill.transform, false);
+            coinDot.GetComponent<Image>().color = new Color(1f, 0.82f, 0.25f);
+            SetRect((RectTransform)coinDot.transform, new Vector2(0, 0.5f), new Vector2(0, 0.5f),
+                new Vector2(50, 0), new Vector2(54, 54));
+
+            _coinText = CreateText("Coins", coinPill.transform, 44, TextAnchor.MiddleLeft);
+            _coinText.color = new Color(1f, 0.86f, 0.36f);
+            SetRect(_coinText.rectTransform, new Vector2(0, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero);
+            _coinText.rectTransform.offsetMin = new Vector2(92, 0);
+            _coinText.rectTransform.offsetMax = new Vector2(-16, 0);
 
             _tutorialText = CreateText("Tutorial", transform, 38, TextAnchor.MiddleCenter);
             _tutorialText.text = "SWIPE TO MOVE  •  CHOOSE THE BEST GATE";
@@ -121,12 +157,13 @@ namespace _Scripts.Core
 
         private void HandleCoinsChanged(int balance)
         {
-            if (_coinText != null) _coinText.text = "COINS  " + balance;
+            if (_coinText != null) _coinText.text = balance.ToString();
         }
 
         private void HandleGameState(GameState state)
         {
             _state = state;
+            HideCornerClutter();   // re-assert in case the template re-enabled them
             if (_actionButton == null) return;
 
             _actionButton.interactable = true;

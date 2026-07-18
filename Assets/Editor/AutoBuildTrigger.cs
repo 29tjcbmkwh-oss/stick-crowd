@@ -14,8 +14,9 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class AutoBuildTrigger
 {
-    private const string BuildMarker = "/Users/a/blue-vs-orange-runner/base/autobuild-request";
-    private const string ThemeMarker = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
+    private const string BuildMarker   = "/Users/a/blue-vs-orange-runner/base/autobuild-request";
+    private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
+    private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
     private static bool _fired;
 
     static AutoBuildTrigger()
@@ -28,9 +29,10 @@ public static class AutoBuildTrigger
         if (_fired) return;
         if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
 
-        var theme = File.Exists(ThemeMarker);
-        var build = File.Exists(BuildMarker);
-        if (!theme && !build) return;
+        var theme  = File.Exists(ThemeMarker);
+        var visual = File.Exists(VisualMarker);
+        var build  = File.Exists(BuildMarker);
+        if (!theme && !visual && !build) return;
 
         _fired = true;
         EditorApplication.update -= Tick;
@@ -40,6 +42,12 @@ public static class AutoBuildTrigger
             File.Delete(ThemeMarker);
             Debug.Log("[AutoBuildTrigger] theme marker found — applying theme");
             ThemeSetup.Run();
+        }
+        if (visual)
+        {
+            File.Delete(VisualMarker);
+            Debug.Log("[AutoBuildTrigger] visual marker found — applying visual overhaul");
+            VisualOverhaul.Run();
         }
         if (build)
         {
