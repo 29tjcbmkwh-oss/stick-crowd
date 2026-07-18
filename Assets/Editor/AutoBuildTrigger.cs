@@ -17,6 +17,7 @@ public static class AutoBuildTrigger
     private const string BuildMarker   = "/Users/a/blue-vs-orange-runner/base/autobuild-request";
     private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
     private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
+    private const string CharMarker    = "/Users/a/blue-vs-orange-runner/base/character-swap-request";
     private static bool _fired;
 
     static AutoBuildTrigger()
@@ -31,8 +32,9 @@ public static class AutoBuildTrigger
 
         var theme  = File.Exists(ThemeMarker);
         var visual = File.Exists(VisualMarker);
+        var chr    = File.Exists(CharMarker);
         var build  = File.Exists(BuildMarker);
-        if (!theme && !visual && !build) return;
+        if (!theme && !visual && !chr && !build) return;
 
         _fired = true;
         EditorApplication.update -= Tick;
@@ -48,6 +50,12 @@ public static class AutoBuildTrigger
             File.Delete(VisualMarker);
             Debug.Log("[AutoBuildTrigger] visual marker found — applying visual overhaul");
             VisualOverhaul.Run();
+        }
+        if (chr)
+        {
+            File.Delete(CharMarker);
+            Debug.Log("[AutoBuildTrigger] character marker found — swapping character");
+            CharacterSwap.Run();
         }
         if (build)
         {
