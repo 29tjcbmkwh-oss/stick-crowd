@@ -19,7 +19,7 @@ PluginImporter:
       enabled: 1
       settings: {}
   - first:
-      Any:
+      Any: 
     second:
       enabled: 0
       settings: {}
@@ -29,6 +29,6 @@ PluginImporter:
       enabled: 0
       settings:
         DefaultValueInitialized: true
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

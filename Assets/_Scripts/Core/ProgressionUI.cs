@@ -11,7 +11,16 @@ namespace _Scripts.Core
     public sealed class ProgressionUI : MonoBehaviour
     {
         private const string TutorialSeenKey = "stickcrowd.tutorial_seen";
+        // The template's cramped top-centre HUD (count chip, points, stubby bar) reads as broken;
+        // hide it and show a clean crowd counter instead.
+        private static readonly string[] TemplateHudNames =
+        {
+            "LevelBack", "PointsBack", "ProgressBar", "SettingsButton",
+            "PlayerBarHolder", "EnemyBarHolder", "CloseButton"
+        };
         private Text _coinText;
+        private Text _crowdText;
+        private GameObject _crowdPill;
         private Text _tutorialText;
         private Text _actionText;
         private Text _statusText;
@@ -30,6 +39,7 @@ namespace _Scripts.Core
             yield return null;
             BuildUi();
             HideCornerClutter();
+            HideTemplateHud();
             GameFlowManager.onGameStateChange += HandleGameState;
             ScoreManager.CoinsChanged += HandleCoinsChanged;
             HandleCoinsChanged(ScoreManager.Instance != null ? ScoreManager.Instance.Coins : 0);
@@ -44,9 +54,24 @@ namespace _Scripts.Core
 
         private void Update()
         {
+            if (_crowdText != null && _crowdPill.activeSelf && GameFlowManager.Instance != null)
+                _crowdText.text = Mathf.Max(0, GameFlowManager.Instance.playerCount).ToString();
+
             if (_tutorialText != null && _tutorialText.gameObject.activeSelf &&
                 _state == GameState.Game && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 CompleteTutorial();
+        }
+
+        // Hide the template's cramped top HUD (by name, finds inactive too) so only the clean
+        // coin + crowd counters remain.
+        private void HideTemplateHud()
+        {
+            foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
+            {
+                if (!t.gameObject.scene.IsValid()) continue;
+                foreach (string n in TemplateHudNames)
+                    if (t.name == n) { t.gameObject.SetActive(false); break; }
+            }
         }
 
         // Position-based, name-agnostic: hide any template image sitting in the extreme top-left
@@ -98,6 +123,19 @@ namespace _Scripts.Core
             SetRect(_coinText.rectTransform, new Vector2(0, 0), new Vector2(1, 1), Vector2.zero, Vector2.zero);
             _coinText.rectTransform.offsetMin = new Vector2(92, 0);
             _coinText.rectTransform.offsetMax = new Vector2(-16, 0);
+
+            // Big clean crowd counter, top-center (replaces the template's tiny count chip).
+            _crowdPill = new GameObject("CrowdPill", typeof(RectTransform), typeof(Image));
+            _crowdPill.transform.SetParent(transform, false);
+            _crowdPill.GetComponent<Image>().color = new Color(0.06f, 0.07f, 0.11f, 0.85f);
+            SetRect((RectTransform)_crowdPill.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1),
+                new Vector2(0, -78), new Vector2(200, 104));
+            _crowdText = CreateText("Crowd", _crowdPill.transform, 60, TextAnchor.MiddleCenter);
+            _crowdText.color = Color.white;
+            SetRect(_crowdText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            _crowdText.rectTransform.offsetMin = Vector2.zero;
+            _crowdText.rectTransform.offsetMax = Vector2.zero;
+            _crowdPill.SetActive(false);
 
             _tutorialText = CreateText("Tutorial", transform, 38, TextAnchor.MiddleCenter);
             _tutorialText.text = "SWIPE TO MOVE  •  CHOOSE THE BEST GATE";
@@ -164,6 +202,10 @@ namespace _Scripts.Core
         {
             _state = state;
             HideCornerClutter();   // re-assert in case the template re-enabled them
+            HideTemplateHud();
+            if (_crowdPill != null)
+                _crowdPill.SetActive(state == GameState.Game || state == GameState.Battle ||
+                                     state == GameState.MiniBattle);
             if (_actionButton == null) return;
 
             _actionButton.interactable = true;

@@ -96,20 +96,20 @@ public static class VisualOverhaul
             if (corridor == null) continue;
 
             label.text = GateText(corridor);
-            label.fontSize = 6;
+            label.fontSize = 4.2f;                    // smaller so side-by-side gates don't merge
             label.fontStyle = FontStyles.Bold;
             label.alignment = TextAlignmentOptions.Center;
             label.color = Color.white;
-            label.outlineWidth = 0.32f;               // thick dark outline = readable on any gate
+            label.outlineWidth = 0.3f;                // thick dark outline = readable on any gate
             label.outlineColor = new Color32(6, 8, 14, 255);
             label.enableWordWrapping = false;
 
             var t = label.transform;
-            t.localPosition = new Vector3(0f, 0.75f, 0f);   // sit on the gate slab, not floating above
+            t.localPosition = new Vector3(0f, 0.45f, 0f);   // sit low on the gate slab
             t.localRotation = Quaternion.identity;          // Billboard handles facing
             t.localScale = Vector3.one;
             var rt = label.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(4.5f, 2f);
+            rt.sizeDelta = new Vector2(3.2f, 1.4f);
 
             if (label.GetComponent<_Scripts.Core.Billboard>() == null)
                 label.gameObject.AddComponent<_Scripts.Core.Billboard>();
@@ -135,30 +135,35 @@ public static class VisualOverhaul
     {
         var scene = EditorSceneManager.OpenScene("Assets/Scenes/Level.unity", OpenSceneMode.Single);
 
-        // gradient procedural sky (kills the flat green)
+        // Built-in procedural skybox (guaranteed to build on mobile), tuned BRIGHT + thin
+        // atmosphere for a clean blue sky. The earlier murk was heavy fog + dark tint, not
+        // the shader — so: bright tint, light ground, minimal fog.
         var sky = AssetDatabase.LoadAssetAtPath<Material>($"{MatDir}/Mat_Sky.mat");
-        if (sky == null)
+        var proc = Shader.Find("Skybox/Procedural");
+        if (sky == null || sky.shader != proc)
         {
-            sky = new Material(Shader.Find("Skybox/Procedural"));
+            AssetDatabase.DeleteAsset($"{MatDir}/Mat_Sky.mat");
+            sky = new Material(proc);
             AssetDatabase.CreateAsset(sky, $"{MatDir}/Mat_Sky.mat");
         }
-        sky.SetColor("_SkyTint", SkyTop);
-        sky.SetColor("_GroundColor", GroundTint);
-        sky.SetFloat("_SunSize", 0.04f);
-        sky.SetFloat("_AtmosphereThickness", 1.1f);
-        sky.SetFloat("_Exposure", 1.15f);
+        sky.SetColor("_SkyTint", new Color(0.35f, 0.60f, 1.00f));    // vivid blue
+        sky.SetColor("_GroundColor", new Color(0.75f, 0.86f, 1.00f)); // light horizon, not dark
+        sky.SetFloat("_AtmosphereThickness", 0.55f);                 // thin = crisp, not hazy
+        sky.SetFloat("_SunSize", 0.015f);
+        sky.SetFloat("_Exposure", 1.35f);                            // bright
         EditorUtility.SetDirty(sky);
         RenderSettings.skybox = sky;
 
+        // Only a whisper of far fog to the bright horizon so the track edge fades cleanly.
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.Linear;
-        RenderSettings.fogColor = Horizon;
-        RenderSettings.fogStartDistance = 22f;
-        RenderSettings.fogEndDistance = 95f;
+        RenderSettings.fogColor = new Color(0.80f, 0.89f, 1.00f);
+        RenderSettings.fogStartDistance = 80f;
+        RenderSettings.fogEndDistance = 190f;
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.72f, 0.82f, 1.00f);
-        RenderSettings.ambientEquatorColor = new Color(0.55f, 0.60f, 0.72f);
-        RenderSettings.ambientGroundColor = new Color(0.30f, 0.33f, 0.42f);
+        RenderSettings.ambientSkyColor = new Color(0.88f, 0.93f, 1.00f);
+        RenderSettings.ambientEquatorColor = new Color(0.72f, 0.80f, 0.92f);
+        RenderSettings.ambientGroundColor = new Color(0.42f, 0.46f, 0.54f);
 
         // sun
         var sun = Object.FindObjectsOfType<Light>(true).FirstOrDefault(l => l.type == LightType.Directional);
