@@ -86,7 +86,6 @@ public class AudioManager : Singleton<AudioManager>
     }
     public void SetPlayerPrefs()
     {
-        Debug.Log("setplayerprefs");
         soundState = GetPlayerPref("sound");
         musicState = GetPlayerPref("music");
         vibrateState = GetPlayerPref("vibration");

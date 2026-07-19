@@ -89,7 +89,6 @@ namespace _Scripts.Core
                 if (y > 0.85f && (x < 0.30f || x > 0.70f))
                 {
                     img.gameObject.SetActive(false);
-                    Debug.Log($"[ProgressionUI] hid corner box: {img.name} (x={x:F2} y={y:F2})");
                 }
             }
         }

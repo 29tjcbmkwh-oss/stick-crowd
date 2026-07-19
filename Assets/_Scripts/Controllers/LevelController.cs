@@ -83,7 +83,6 @@ public class LevelController : MonoBehaviour
         PlayerPrefs.SetInt("level", currentLevel);
         PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        Debug.Log("LOAD NEXT LEVEL");
     }
     public void RestartLevel()
     {

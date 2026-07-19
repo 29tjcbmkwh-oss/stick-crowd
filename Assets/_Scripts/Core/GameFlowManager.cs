@@ -73,7 +73,6 @@ namespace _Scripts.Core
 
         public void RestartGame()
         {
-            print("Restart this level");
             ResetReviveAttempt();
             levelController.RestartLevel();
         }
@@ -142,11 +141,9 @@ namespace _Scripts.Core
                     ContinueGameFlow();
                     break; 
                 case GameState.Battle:
-                    print("// Battle phase logic here ");
                     BattlePhase();
                     break;
                 case GameState.MiniBattle:
-                    print("// Mini battle phase logic here ");
                     MiniBattlePhase();
                     break;
                 case GameState.Pause:

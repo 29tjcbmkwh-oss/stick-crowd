@@ -1,4 +1,5 @@
 using System;
+using Crystal;
 using DG.Tweening;
 using Lofelt.NiceVibrations;
 using TMPro;
@@ -30,11 +31,20 @@ namespace _Scripts.Core
         public Image progressBar;
         public GameObject levelCountUIObject;
         public GameObject progressBarUIObject;
-        
+
+        private LeaderboardPanel leaderboardPanel;
+
         private void Start()
         {
             GameFlowManager.onGameStateChange += GameFlowManagerOnGameStateChange;
             levelText.text = "LEVEL " + (PlayerPrefs.GetInt("level", 0) + 1);
+
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                leaderboardPanel = LeaderboardPanel.Build(canvas.transform);
+                BuildLeaderboardButton(canvas);
+            }
         }
 
         private void OnDestroy()
@@ -127,6 +137,65 @@ namespace _Scripts.Core
             GameFlowManager.Instance.LoadNewLevel();
         }
 
+        public void OpenLeaderboard()
+        {
+            if (leaderboardPanel == null) return;
+            ActivatePopup(leaderboardPanel.gameObject);
+            leaderboardPanel.Open(ScoreManager.Instance != null ? ScoreManager.Instance.BestScore : 0);
+        }
+
+        // Small always-reachable corner entry point. Built at runtime as a direct child of the
+        // Canvas (not nested inside upperPanel/gameOverPanel) so it can never overlap or be
+        // hidden behind the existing HUD/popup layouts.
+        private void BuildLeaderboardButton(Canvas canvas)
+        {
+            var safeAreaGO = new GameObject("LeaderboardButtonSafeArea", typeof(RectTransform));
+            safeAreaGO.transform.SetParent(canvas.transform, false);
+            var safeRt = (RectTransform)safeAreaGO.transform;
+            safeRt.anchorMin = Vector2.zero;
+            safeRt.anchorMax = Vector2.one;
+            safeRt.offsetMin = Vector2.zero;
+            safeRt.offsetMax = Vector2.zero;
+            safeAreaGO.AddComponent<SafeArea>();
+
+            var buttonGO = new GameObject("LeaderboardButton", typeof(RectTransform));
+            buttonGO.transform.SetParent(safeAreaGO.transform, false);
+            var rt = (RectTransform)buttonGO.transform;
+            rt.anchorMin = rt.anchorMax = new Vector2(1, 1);
+            rt.pivot = new Vector2(1, 1);
+            rt.sizeDelta = new Vector2(132, 64);
+            rt.anchoredPosition = new Vector2(-24, -24);
+
+            var bg = buttonGO.AddComponent<Image>();
+            bg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
+            bg.type = Image.Type.Sliced;
+            bg.color = new Color(0.06f, 0.08f, 0.16f, 0.82f);
+
+            var button = buttonGO.AddComponent<Button>();
+            var colors = button.colors;
+            colors.highlightedColor = new Color(1f, 1f, 1f, 0.9f);
+            colors.pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+            button.colors = colors;
+            button.onClick.AddListener(OpenLeaderboard);
+
+            var labelGO = new GameObject("Label", typeof(RectTransform));
+            labelGO.transform.SetParent(buttonGO.transform, false);
+            var labelRt = (RectTransform)labelGO.transform;
+            labelRt.anchorMin = Vector2.zero;
+            labelRt.anchorMax = Vector2.one;
+            labelRt.offsetMin = Vector2.zero;
+            labelRt.offsetMax = Vector2.zero;
+            var label = labelGO.AddComponent<TextMeshProUGUI>();
+            label.text = "RANK";
+            label.fontSize = 24;
+            label.fontStyle = FontStyles.Bold;
+            label.color = new Color32(0xFF, 0x7A, 0x2F, 0xFF);
+            label.alignment = TextAlignmentOptions.Center;
+            label.characterSpacing = 2;
+            label.raycastTarget = false;
+            if (TMP_Settings.defaultFontAsset != null) label.font = TMP_Settings.defaultFontAsset;
+        }
+
         public void HideOutcomePanels()
         {
             if (gameOverPanel != null) gameOverPanel.SetActive(false);
@@ -150,10 +219,7 @@ namespace _Scripts.Core
             }
             if (target == "MusicButton")
             {
-                print("****  " + currentMusicState);
-
                 currentMusicState = AudioManager.Instance.ToggleTheme();
-                print("**** 2 " + currentMusicState);
                 ChangeToggleStatus(button, currentMusicState);
 
                 PlayerPrefs.SetInt("music", Convert.ToInt32(currentMusicState));

@@ -20,26 +20,21 @@ namespace _Scripts.Controllers
                 case Constants.CorridorTypes.Increase:
                     formation.amount += corridor.increaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
-                    print("INCREASING ARMY AMOUNT");
-                    break; 
+                    break;
                 case Constants.CorridorTypes.Decrease:
                     formation.amount -= corridor.decreaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
-
-                    print("DECREASE ARMY AMOUNT");
                     break;
                 case Constants.CorridorTypes.Multiply:
                     formation.amount *= Mathf.Max(1, corridor.multiplyAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
-                    print("Multiply ARMY AMOUNT");
                     break;
                 case Constants.CorridorTypes.Divide:
                     formation.amount /= Mathf.Max(1, corridor.divideAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
-                    print("Divide ARMY AMOUNT");
                     break;
                 default:
-                    Debug.Log("TRIGGER EXCEPTION");
+                    Debug.LogWarning("[CorridorController] Unhandled corridor type: " + corridor.GetCorridorType());
                     break;
             }
 

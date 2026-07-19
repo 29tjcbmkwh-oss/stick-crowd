@@ -77,7 +77,6 @@ namespace _Scripts.Controllers
             if (playerBarAmount  <= 0)
             {
                 didLost = true;
-                print("PLAYER LOST THE BATTLE");
                 UIManager.Instance.ClosePopup(battleUI);
                 GameFlowManager.Instance.UpdateGameState(GameState.Lose);
             }
@@ -103,7 +102,6 @@ namespace _Scripts.Controllers
             camController.lockCamera = true;
             canStart = true;
             UIManager.Instance.ActivatePopup(battleUI);
-            print("OPEN BATTLE SCENE");
         }
 
         private void CloseBattleScene()
