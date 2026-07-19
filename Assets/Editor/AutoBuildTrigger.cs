@@ -1,7 +1,8 @@
 // Runs marker-requested work from a GUI editor without menu interaction. Markers at the
 // project root:
 //   apply-theme-request   -> run the Blue-vs-Orange theme pass
-//   autobuild-request     -> build the Android APK
+//   autobuild-request     -> build the Android debug APK
+//   autobuild-release-request -> build the signed Android release AAB
 //
 // Uses EditorApplication.update (re-subscribed on every domain reload) rather than
 // delayCall: importing the AdMob SDK / EDM4U triggers repeated domain reloads that DISCARD
@@ -15,6 +16,7 @@ using UnityEngine;
 public static class AutoBuildTrigger
 {
     private const string BuildMarker   = "/Users/a/blue-vs-orange-runner/base/autobuild-request";
+    private const string ReleaseMarker = "/Users/a/blue-vs-orange-runner/base/autobuild-release-request";
     private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
     private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
     private const string CharMarker    = "/Users/a/blue-vs-orange-runner/base/character-swap-request";
@@ -30,11 +32,12 @@ public static class AutoBuildTrigger
         if (_fired) return;
         if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
 
-        var theme  = File.Exists(ThemeMarker);
-        var visual = File.Exists(VisualMarker);
-        var chr    = File.Exists(CharMarker);
-        var build  = File.Exists(BuildMarker);
-        if (!theme && !visual && !chr && !build) return;
+        var theme   = File.Exists(ThemeMarker);
+        var visual  = File.Exists(VisualMarker);
+        var chr     = File.Exists(CharMarker);
+        var build   = File.Exists(BuildMarker);
+        var release = File.Exists(ReleaseMarker);
+        if (!theme && !visual && !chr && !build && !release) return;
 
         _fired = true;
         EditorApplication.update -= Tick;
@@ -60,8 +63,14 @@ public static class AutoBuildTrigger
         if (build)
         {
             File.Delete(BuildMarker);
-            Debug.Log("[AutoBuildTrigger] build marker found — starting Android build");
+            Debug.Log("[AutoBuildTrigger] build marker found — starting Android debug build");
             AndroidBuilder.BuildDebugApk();
+        }
+        if (release)
+        {
+            File.Delete(ReleaseMarker);
+            Debug.Log("[AutoBuildTrigger] release marker found — starting Android release AAB build");
+            ReleaseBuilder.BuildReleaseAab();
         }
     }
 }

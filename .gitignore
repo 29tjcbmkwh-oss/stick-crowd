@@ -35,7 +35,13 @@ sysinfo.txt
 
 # Builds
 *.apk
+*.aab
 *.unitypackage
+
+# Signing (never commit the release keystore or its credentials)
+*.jks
+*.keystore
+keystore.properties
 
 # Crashlytics generated file
 Assets/StreamingAssets/crashlytics-build.properties
