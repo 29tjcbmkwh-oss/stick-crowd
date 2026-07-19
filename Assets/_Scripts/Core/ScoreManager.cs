@@ -10,11 +10,16 @@ using UnityEngine;
 public class ScoreManager : Singleton<ScoreManager>
 {
     private const string CoinsKey = "stickcrowd.coins";
+    private const string BestScoreKey = "stickcrowd.best_score";
+    private const string BestLevelKey = "stickcrowd.best_level";
     private bool _runRewardGranted;
     private bool _runRewardDoubled;
 
     public static event Action<int> CoinsChanged;
+    public static event Action<int> BestScoreChanged;
     public int Coins => PlayerPrefs.GetInt(CoinsKey, 0);
+    public int BestScore => PlayerPrefs.GetInt(BestScoreKey, 0);
+    public int BestLevel => PlayerPrefs.GetInt(BestLevelKey, 1);
     public int LastRunReward { get; private set; }
     public bool CanDoubleLastReward => _runRewardGranted && !_runRewardDoubled;
 
@@ -55,6 +60,23 @@ public class ScoreManager : Singleton<ScoreManager>
         _runRewardGranted = true;
         LastRunReward = Mathf.Max(1, amount);
         AddCoins(LastRunReward);
+        UpdateRecords(LastRunReward);
+    }
+
+    // Best score/level records, and submit to the leaderboard (Google Play Games when the
+    // team has activated it; otherwise the local competitive board).
+    private void UpdateRecords(int runScore)
+    {
+        int level = PlayerPrefs.GetInt("level", 0) + 1;
+        if (level > BestLevel) PlayerPrefs.SetInt(BestLevelKey, level);
+
+        if (runScore > BestScore)
+        {
+            PlayerPrefs.SetInt(BestScoreKey, runScore);
+            PlayerPrefs.Save();
+            BestScoreChanged?.Invoke(runScore);
+        }
+        Leaderboard.SubmitBestScore(Mathf.Max(runScore, BestScore));
     }
 
     public bool DoubleLastReward()
