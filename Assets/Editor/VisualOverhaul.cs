@@ -17,8 +17,8 @@ public static class VisualOverhaul
     private static readonly Color SkyTop     = new Color(0.36f, 0.62f, 1.00f);
     private static readonly Color Horizon    = new Color(0.78f, 0.90f, 1.00f);
     private static readonly Color GroundTint = new Color(0.24f, 0.34f, 0.52f);
-    private static readonly Color GateBlue   = new Color(0.20f, 0.50f, 1.00f);
-    private static readonly Color GateRed    = new Color(1.00f, 0.28f, 0.30f);
+    private static readonly Color GateBlue   = BrandPalette.Blue;
+    private static readonly Color GateOrange = BrandPalette.Orange;
 
     [MenuItem("Tools/Stickman/Apply Visual Overhaul")]
     public static void Run()
@@ -81,7 +81,9 @@ public static class VisualOverhaul
                 {
                     if (mat == null) continue;
                     mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", (positive ? GateBlue : GateRed) * 0.35f);
+                    // Stronger glow than before (0.35 -> 0.55) so the choice reads at a
+                    // glance from a distance, not just once the label text is legible.
+                    mat.SetColor("_EmissionColor", (positive ? GateBlue : GateOrange) * 0.55f);
                     EditorUtility.SetDirty(mat);
                 }
             }
@@ -96,13 +98,16 @@ public static class VisualOverhaul
             if (corridor == null) continue;
 
             label.text = GateText(corridor);
-            label.fontSize = 4.2f;                    // smaller so side-by-side gates don't merge
+            label.fontSize = 4.6f;                    // slightly bigger (4.2 -> 4.6) with the glyph added
             label.fontStyle = FontStyles.Bold;
             label.alignment = TextAlignmentOptions.Center;
             label.color = Color.white;
             label.outlineWidth = 0.3f;                // thick dark outline = readable on any gate
             label.outlineColor = new Color32(6, 8, 14, 255);
             label.enableWordWrapping = false;
+
+            if (label.gameObject.GetComponent<GatePulse>() == null)
+                label.gameObject.AddComponent<GatePulse>();
 
             var t = label.transform;
             t.localPosition = new Vector3(0f, 0.45f, 0f);   // sit low on the gate slab
@@ -122,12 +127,14 @@ public static class VisualOverhaul
         return count;
     }
 
+    // Leading glyph makes the choice readable before the number is — a distant blue gate
+    // reads "up/good" and a distant orange gate reads "down/danger" from shape alone.
     private static string GateText(Corridor c) => c.GetCorridorType() switch
     {
-        Constants.CorridorTypes.Increase => $"+{c.increaseAmount}",
-        Constants.CorridorTypes.Decrease => $"-{c.decreaseAmount}",
-        Constants.CorridorTypes.Multiply => $"x{c.multiplyAmount}",
-        Constants.CorridorTypes.Divide   => $"/{c.divideAmount}",
+        Constants.CorridorTypes.Increase => $"▲+{c.increaseAmount}",
+        Constants.CorridorTypes.Decrease => $"▼-{c.decreaseAmount}",
+        Constants.CorridorTypes.Multiply => $"▲x{c.multiplyAmount}",
+        Constants.CorridorTypes.Divide   => $"▼÷{c.divideAmount}",
         _ => "?"
     };
 

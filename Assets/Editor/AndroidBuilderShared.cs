@@ -27,6 +27,20 @@ public static class AndroidBuilderShared
         Debug.Log($"[AndroidBuilderShared] tool paths applied — sdk:{UnityEditor.Android.AndroidExternalToolsSettings.sdkRootPath} " +
                   $"ndk:{UnityEditor.Android.AndroidExternalToolsSettings.ndkRootPath} " +
                   $"jdk:{UnityEditor.Android.AndroidExternalToolsSettings.jdkRootPath}");
+
+        // The above only wires Unity's OWN Android build step. EDM4U's dependency resolver
+        // (PlayServicesResolver) shells out to its own bundled `gradlew` as a separate child
+        // process to fetch Maven artifacts — that subprocess looks for Java via JAVA_HOME/PATH,
+        // not via AndroidExternalToolsSettings, and fails with "Unable to locate a Java Runtime"
+        // if the OS has no system-registered JDK (confirmed on this machine: `/usr/libexec/java_home`
+        // finds nothing). Setting the process-level env var here means every child process this
+        // Editor session spawns afterward (gradlew included) inherits a working JAVA_HOME.
+        Environment.SetEnvironmentVariable("JAVA_HOME", JdkRoot);
+        string jdkBin = Path.Combine(JdkRoot, "bin");
+        string path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        if (!path.Split(Path.PathSeparator).Contains(jdkBin))
+            Environment.SetEnvironmentVariable("PATH", jdkBin + Path.PathSeparator + path);
+        Debug.Log($"[AndroidBuilderShared] JAVA_HOME set for this process: {JdkRoot}");
     }
 
     // Sets Google's official TEST App IDs in the AdMob settings asset if none are set.

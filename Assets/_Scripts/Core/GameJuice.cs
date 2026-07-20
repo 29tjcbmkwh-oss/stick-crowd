@@ -2,6 +2,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using _Scripts.Models;
+using _Scripts.Utilities;
 
 namespace _Scripts.Core
 {
@@ -52,10 +53,47 @@ namespace _Scripts.Core
                     label.transform.DOKill(true);
                     label.transform.DOPunchScale(Vector3.one * 0.55f, 0.35f, 8, 0.7f);
                 }
-                BurstAt(corridor.transform.position + Vector3.up * 0.5f,
-                        positive ? new Color(0.20f, 0.45f, 1f) : new Color(0.95f, 0.23f, 0.25f), 18);
+                Vector3 burstPos = corridor.transform.position + Vector3.up * 0.5f;
+                BurstAt(burstPos, BrandPalette.ForChoice(positive), 18);
+                SpawnFloatingText(burstPos + Vector3.up * 0.4f, GateDeltaText(corridor), positive);
             }
             FovKick(positive ? 4f : -3f, 0.15f);
+        }
+
+        // Same leading-glyph convention as the gate label itself (VisualOverhaul.cs) so the
+        // floating combat-text reinforces rather than duplicates a different format.
+        private static string GateDeltaText(Corridor corridor) => corridor.GetCorridorType() switch
+        {
+            Constants.CorridorTypes.Increase => $"+{corridor.increaseAmount}",
+            Constants.CorridorTypes.Decrease => $"-{corridor.decreaseAmount}",
+            Constants.CorridorTypes.Multiply => $"×{corridor.multiplyAmount}",
+            Constants.CorridorTypes.Divide   => $"÷{corridor.divideAmount}",
+            _ => "?"
+        };
+
+        // World-space floating text: a short up-and-fade combat-text readout of the gate's
+        // effect, in the same Blue/Orange as the choice itself. Built entirely in code —
+        // no prefab/scene dependency, consistent with the rest of this file.
+        private static void SpawnFloatingText(Vector3 worldPos, string text, bool positive)
+        {
+            GameObject go = new GameObject("GateFeedbackText");
+            go.transform.position = worldPos;
+
+            TextMeshPro tmp = go.AddComponent<TextMeshPro>();
+            tmp.text = text;
+            tmp.fontSize = 6f;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = BrandPalette.ForChoice(positive);
+            tmp.outlineWidth = 0.25f;
+            tmp.outlineColor = new Color32(6, 8, 14, 255);
+
+            if (go.GetComponent<Billboard>() == null) go.AddComponent<Billboard>();
+
+            Transform t = go.transform;
+            t.DOMoveY(worldPos.y + 1.3f, 0.9f).SetEase(Ease.OutCubic);
+            tmp.DOFade(0f, 0.9f).SetDelay(0.15f).SetEase(Ease.InQuad);
+            Object.Destroy(go, 1.1f);
         }
 
         // ---------- camera ----------
@@ -111,7 +149,7 @@ namespace _Scripts.Core
             Vector3 pos = cam != null
                 ? cam.transform.position + cam.transform.forward * 6f + Vector3.up * 2.5f
                 : Vector3.up * 3f;
-            BurstAt(pos, new Color(0.20f, 0.45f, 1f), 60, new Color(1f, 0.55f, 0.10f));
+            BurstAt(pos, BrandPalette.Blue, 60, BrandPalette.Orange);
         }
 
         private static void BurstAt(Vector3 position, Color colorA, int count, Color? colorB = null)

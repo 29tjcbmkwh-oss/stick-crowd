@@ -147,6 +147,7 @@ GameObject:
   - component: {fileID: 788168563627971895}
   - component: {fileID: 4531580003392639606}
   - component: {fileID: 5684444394640365728}
+  - component: {fileID: 7948442954696606584}
   m_Layer: 0
   m_Name: GateLabel
   m_TagString: Untagged
@@ -236,7 +237,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: +0
+  m_text: "\u25B2+0"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -263,8 +264,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 4.2
-  m_fontSizeBase: 4.2
+  m_fontSize: 4.6
+  m_fontSizeBase: 4.6
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -318,5 +319,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b40ea73dab0124d4eb5736f8cdf26304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7948442954696606584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8315650139782923155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65353e03f29c84beb86ad530385488dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

@@ -8,6 +8,13 @@
 // delayCall: importing the AdMob SDK / EDM4U triggers repeated domain reloads that DISCARD
 // pending delayCalls before they fire, so the build never started. Polling update survives
 // reloads and fires only once the editor is idle (not compiling/updating).
+//
+// Deliberately stays subscribed forever instead of a one-shot latch: an earlier version set
+// a static `_fired` flag and unsubscribed after the first marker it handled, which meant every
+// marker after the first silently did nothing until the next script recompile reset the static
+// field via domain reload (discovered 2026-07-20 — two markers sat unconsumed for several
+// minutes with no error, because nothing was listening anymore). `_busy` only guards against
+// re-entering while a request is actively being processed in the same tick.
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -20,7 +27,7 @@ public static class AutoBuildTrigger
     private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
     private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
     private const string CharMarker    = "/Users/a/blue-vs-orange-runner/base/character-swap-request";
-    private static bool _fired;
+    private static bool _busy;
 
     static AutoBuildTrigger()
     {
@@ -29,7 +36,7 @@ public static class AutoBuildTrigger
 
     private static void Tick()
     {
-        if (_fired) return;
+        if (_busy) return;
         if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
 
         var theme   = File.Exists(ThemeMarker);
@@ -39,38 +46,43 @@ public static class AutoBuildTrigger
         var release = File.Exists(ReleaseMarker);
         if (!theme && !visual && !chr && !build && !release) return;
 
-        _fired = true;
-        EditorApplication.update -= Tick;
-
-        if (theme)
+        _busy = true;
+        try
         {
-            File.Delete(ThemeMarker);
-            Debug.Log("[AutoBuildTrigger] theme marker found — applying theme");
-            ThemeSetup.Run();
+            if (theme)
+            {
+                File.Delete(ThemeMarker);
+                Debug.Log("[AutoBuildTrigger] theme marker found — applying theme");
+                ThemeSetup.Run();
+            }
+            if (visual)
+            {
+                File.Delete(VisualMarker);
+                Debug.Log("[AutoBuildTrigger] visual marker found — applying visual overhaul");
+                VisualOverhaul.Run();
+            }
+            if (chr)
+            {
+                File.Delete(CharMarker);
+                Debug.Log("[AutoBuildTrigger] character marker found — swapping character");
+                CharacterSwap.Run();
+            }
+            if (build)
+            {
+                File.Delete(BuildMarker);
+                Debug.Log("[AutoBuildTrigger] build marker found — starting Android debug build");
+                AndroidBuilder.BuildDebugApk();
+            }
+            if (release)
+            {
+                File.Delete(ReleaseMarker);
+                Debug.Log("[AutoBuildTrigger] release marker found — starting Android release AAB build");
+                ReleaseBuilder.BuildReleaseAab();
+            }
         }
-        if (visual)
+        finally
         {
-            File.Delete(VisualMarker);
-            Debug.Log("[AutoBuildTrigger] visual marker found — applying visual overhaul");
-            VisualOverhaul.Run();
-        }
-        if (chr)
-        {
-            File.Delete(CharMarker);
-            Debug.Log("[AutoBuildTrigger] character marker found — swapping character");
-            CharacterSwap.Run();
-        }
-        if (build)
-        {
-            File.Delete(BuildMarker);
-            Debug.Log("[AutoBuildTrigger] build marker found — starting Android debug build");
-            AndroidBuilder.BuildDebugApk();
-        }
-        if (release)
-        {
-            File.Delete(ReleaseMarker);
-            Debug.Log("[AutoBuildTrigger] release marker found — starting Android release AAB build");
-            ReleaseBuilder.BuildReleaseAab();
+            _busy = false;
         }
     }
 }

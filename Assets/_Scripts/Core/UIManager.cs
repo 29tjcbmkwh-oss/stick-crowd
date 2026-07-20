@@ -38,6 +38,7 @@ namespace _Scripts.Core
         {
             GameFlowManager.onGameStateChange += GameFlowManagerOnGameStateChange;
             levelText.text = "LEVEL " + (PlayerPrefs.GetInt("level", 0) + 1);
+            PolishHud();
 
             var canvas = GetComponentInParent<Canvas>();
             if (canvas != null)
@@ -45,6 +46,39 @@ namespace _Scripts.Core
                 leaderboardPanel = LeaderboardPanel.Build(canvas.transform);
                 BuildLeaderboardButton(canvas);
             }
+        }
+
+        // Restyles the always-visible score/level/progress HUD to the Blue vs Orange
+        // Runner brand tokens instead of the template's default TMP/Image styling. Done at
+        // runtime against the existing serialized references (not by hand-editing
+        // Canvas.prefab's YAML) — same safe pattern already used by LeaderboardPanel/
+        // ProgressionUI in this project.
+        private void PolishHud()
+        {
+            StyleHudLabel(levelText, 0.85f);
+            StyleHudLabel(playerCountText, 1f);
+            if (ScoreManager.Instance != null) StyleHudLabel(ScoreManager.Instance.upperScoreText, 1f);
+
+            if (progressBar != null)
+            {
+                progressBar.color = _Scripts.Utilities.BrandPalette.Blue;
+                Image track = progressBar.transform.parent != null
+                    ? progressBar.transform.parent.GetComponent<Image>()
+                    : null;
+                if (track != null && track != progressBar)
+                    track.color = new Color(0f, 0f, 0f, 0.35f);
+            }
+        }
+
+        private static void StyleHudLabel(TMP_Text label, float sizeMultiplier)
+        {
+            if (label == null) return;
+            label.fontStyle = FontStyles.Bold;
+            label.color = _Scripts.Utilities.BrandPalette.TextPrimary;
+            label.fontSize *= sizeMultiplier;
+            label.outlineWidth = 0.2f;
+            label.outlineColor = new Color32(6, 8, 14, 200);
+            label.characterSpacing = 1f;
         }
 
         private void OnDestroy()
@@ -88,10 +122,30 @@ namespace _Scripts.Core
                 GameFlowManager.Instance.UpdateGameState(GameState.Pause);
             }
             popupType.SetActive(true);
-            popupType.transform.GetComponent<Transform>().DOScale(new Vector3(1, 1, 1), 0.4F).SetEase(Ease.InExpo);
-            
+            // OutBack (a slight overshoot pop) reads far better for a modal entering than the
+            // previous InExpo, which eases the wrong direction for something appearing on screen.
+            popupType.transform.DOScale(Vector3.one, 0.4F).SetEase(Ease.OutBack);
+            PolishPopupLabels(popupType);
+
             AudioManager.Instance.PlayOneShot(AudioManager.Instance.clickSound);
             HapticPatterns.PlayPreset(HapticPatterns.PresetType.RigidImpact);
+        }
+
+        // Applies the same brand-consistent text styling used on the HUD (see PolishHud) to
+        // whatever labels the game-over/win/leaderboard panel already contains, without
+        // touching Canvas.prefab directly. Deliberately does NOT touch fontSize (unlike
+        // StyleHudLabel) — ActivatePopup can run repeatedly on the same panel within one
+        // scene lifetime (e.g. reopening the leaderboard), and a multiplicative size bump
+        // would compound on every open. Color/weight/outline are safe to reapply as-is.
+        private static void PolishPopupLabels(GameObject popup)
+        {
+            foreach (TMP_Text label in popup.GetComponentsInChildren<TMP_Text>(true))
+            {
+                label.fontStyle = FontStyles.Bold;
+                label.color = _Scripts.Utilities.BrandPalette.TextPrimary;
+                label.outlineWidth = 0.2f;
+                label.outlineColor = new Color32(6, 8, 14, 200);
+            }
         }
 
         public void ClosePopup(GameObject popupType)
@@ -105,7 +159,9 @@ namespace _Scripts.Core
             {
                 GameFlowManager.Instance.UpdateGameState(GameState.Game);
             }
-            popupType.transform.GetComponent<Transform>().DOScale(new Vector3(0, 0, 0), 0.3F).SetEase(Ease.OutExpo).OnComplete(() => popupType.SetActive(false));
+            // InBack for exit: accelerates away quickly and feels responsive, mirroring the
+            // OutBack pop-in in ActivatePopup rather than the previous mismatched OutExpo.
+            popupType.transform.DOScale(Vector3.zero, 0.25F).SetEase(Ease.InBack).OnComplete(() => popupType.SetActive(false));
             
             AudioManager.Instance.PlayOneShot(AudioManager.Instance.clickSound);
             HapticPatterns.PlayPreset(HapticPatterns.PresetType.RigidImpact);

@@ -17,13 +17,13 @@ using _Scripts.Utilities;
 
 public static class ThemeSetup
 {
-    // ---- palette (from the reference clip) ----
+    // ---- palette (from the reference clip; gate colors come from the shared brand tokens) ----
     private static readonly Color VoidGreen   = new Color(0.13f, 0.78f, 0.29f);  // bright flat green background
     private static readonly Color TrackDark   = new Color(0.16f, 0.14f, 0.19f);  // near-black purple track
     private static readonly Color WallDark    = new Color(0.24f, 0.21f, 0.29f);
-    private static readonly Color ObstacleRed = new Color(0.95f, 0.23f, 0.25f);
-    private static readonly Color GateBlue    = new Color(0.20f, 0.45f, 1.00f, 0.55f);
-    private static readonly Color GateRed     = new Color(1.00f, 0.25f, 0.25f, 0.55f);
+    private static readonly Color ObstacleRed = new Color(0.95f, 0.23f, 0.25f);  // static hazard prop, not a gate choice
+    private static readonly Color GateBlue    = BrandPalette.BlueTranslucent;
+    private static readonly Color GateOrange  = BrandPalette.OrangeTranslucent;
     private const string MatDir = "Assets/_Assets/Stickman/Materials";
 
     [MenuItem("Tools/Stickman/Apply Theme")]
@@ -34,13 +34,13 @@ public static class ThemeSetup
             var trackMat = Opaque("Mat_TrackDark", TrackDark);
             var wallMat  = Opaque("Mat_WallDark", WallDark);
             var obstMat  = Opaque("Mat_ObstacleRed", ObstacleRed);
-            var gateBlue = Transparent("Mat_GateBlue", GateBlue);
-            var gateRed  = Transparent("Mat_GateRed", GateRed);
+            var gateBlue   = Transparent("Mat_GateBlue", GateBlue);
+            var gateOrange = Transparent("Mat_GateOrange", GateOrange);
 
-            ThemePrefab("Assets/_Assets/ENV/Level1.prefab", trackMat, wallMat, obstMat, gateBlue, gateRed);
-            ThemePrefab("Assets/_Assets/ENV/Corridor1.prefab", trackMat, wallMat, obstMat, gateBlue, gateRed);
+            ThemePrefab("Assets/_Assets/ENV/Level1.prefab", trackMat, wallMat, obstMat, gateBlue, gateOrange);
+            ThemePrefab("Assets/_Assets/ENV/Corridor1.prefab", trackMat, wallMat, obstMat, gateBlue, gateOrange);
             FixCatRotationTarget();
-            ThemeScene(trackMat, wallMat, obstMat, gateBlue, gateRed);
+            ThemeScene(trackMat, wallMat, obstMat, gateBlue, gateOrange);
 
             AssetDatabase.SaveAssets();
             Debug.Log("[ThemeSetup] SUCCESS — Blue-vs-Orange theme applied.");
@@ -83,7 +83,7 @@ public static class ThemeSetup
 
     // ---------- shared theming of a hierarchy ----------
     private static int ThemeHierarchy(GameObject root, Material track, Material wall,
-                                      Material obst, Material gateBlue, Material gateRed)
+                                      Material obst, Material gateBlue, Material gateOrange)
     {
         int touched = 0;
         foreach (var r in root.GetComponentsInChildren<MeshRenderer>(true))
@@ -94,7 +94,7 @@ public static class ThemeSetup
             {
                 var positive = corridor.GetCorridorType() is Constants.CorridorTypes.Increase
                                                            or Constants.CorridorTypes.Multiply;
-                r.sharedMaterials = Enumerable.Repeat(positive ? gateBlue : gateRed,
+                r.sharedMaterials = Enumerable.Repeat(positive ? gateBlue : gateOrange,
                                                       r.sharedMaterials.Length).ToArray();
                 EnsureGateLabel(corridor);
                 touched++;
@@ -150,12 +150,12 @@ public static class ThemeSetup
     }
 
     private static void ThemePrefab(string path, Material track, Material wall,
-                                    Material obst, Material gateBlue, Material gateRed)
+                                    Material obst, Material gateBlue, Material gateOrange)
     {
         var root = PrefabUtility.LoadPrefabContents(path);
         try
         {
-            var n = ThemeHierarchy(root, track, wall, obst, gateBlue, gateRed);
+            var n = ThemeHierarchy(root, track, wall, obst, gateBlue, gateOrange);
             PrefabUtility.SaveAsPrefabAsset(root, path);
             Debug.Log($"[ThemeSetup] {Path.GetFileName(path)}: {n} renderers themed");
         }
@@ -164,7 +164,7 @@ public static class ThemeSetup
 
     // ---------- scene: camera, crowd size, UI ----------
     private static void ThemeScene(Material track, Material wall, Material obst,
-                                   Material gateBlue, Material gateRed)
+                                   Material gateBlue, Material gateOrange)
     {
         var scenePath = "Assets/Scenes/Level.unity";
         var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
@@ -182,7 +182,7 @@ public static class ThemeSetup
 
         // theme anything placed directly in the scene (not via prefabs)
         foreach (var rootGo in scene.GetRootGameObjects())
-            ThemeHierarchy(rootGo, track, wall, obst, gateBlue, gateRed);
+            ThemeHierarchy(rootGo, track, wall, obst, gateBlue, gateOrange);
 
         StyleUI();
 
