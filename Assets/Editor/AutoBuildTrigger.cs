@@ -1,8 +1,12 @@
 // Runs marker-requested work from a GUI editor without menu interaction. Markers at the
 // project root:
-//   apply-theme-request   -> run the Blue-vs-Orange theme pass
-//   autobuild-request     -> build the Android debug APK
+//   apply-theme-request       -> run the Blue-vs-Orange theme pass
+//   visual-overhaul-request   -> run the gate/sky/lighting visual pass
+//   post-processing-request   -> apply the Bloom/ColorAdjustments/Vignette/AO volume
+//   font-setup-request        -> import Russo One and set it as the TMP default font
+//   autobuild-request         -> build the Android debug APK
 //   autobuild-release-request -> build the signed Android release AAB
+//   capture-gameplay-request  -> handled by GameplayCapture.cs (own polling loop)
 //
 // Uses EditorApplication.update (re-subscribed on every domain reload) rather than
 // delayCall: importing the AdMob SDK / EDM4U triggers repeated domain reloads that DISCARD
@@ -27,6 +31,8 @@ public static class AutoBuildTrigger
     private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
     private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
     private const string CharMarker    = "/Users/a/blue-vs-orange-runner/base/character-swap-request";
+    private const string PostFxMarker  = "/Users/a/blue-vs-orange-runner/base/post-processing-request";
+    private const string FontMarker    = "/Users/a/blue-vs-orange-runner/base/font-setup-request";
     private static bool _busy;
 
     static AutoBuildTrigger()
@@ -38,13 +44,16 @@ public static class AutoBuildTrigger
     {
         if (_busy) return;
         if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+        if (EditorApplication.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode) return;
 
         var theme   = File.Exists(ThemeMarker);
         var visual  = File.Exists(VisualMarker);
         var chr     = File.Exists(CharMarker);
         var build   = File.Exists(BuildMarker);
         var release = File.Exists(ReleaseMarker);
-        if (!theme && !visual && !chr && !build && !release) return;
+        var postFx  = File.Exists(PostFxMarker);
+        var font    = File.Exists(FontMarker);
+        if (!theme && !visual && !chr && !build && !release && !postFx && !font) return;
 
         _busy = true;
         try
@@ -60,6 +69,18 @@ public static class AutoBuildTrigger
                 File.Delete(VisualMarker);
                 Debug.Log("[AutoBuildTrigger] visual marker found — applying visual overhaul");
                 VisualOverhaul.Run();
+            }
+            if (postFx)
+            {
+                File.Delete(PostFxMarker);
+                Debug.Log("[AutoBuildTrigger] post-processing marker found — applying volume");
+                PostProcessingSetup.Run();
+            }
+            if (font)
+            {
+                File.Delete(FontMarker);
+                Debug.Log("[AutoBuildTrigger] font marker found — importing Russo One");
+                FontSetup.Run();
             }
             if (chr)
             {

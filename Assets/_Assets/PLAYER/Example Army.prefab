@@ -329,8 +329,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74b79c6b37f84326bcccaca8a61238b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usePool: 1
-  _catUnit: {fileID: 2779860119740981577, guid: b96aa5d06b8e045a28892c1b3e6f04e3, type: 3}
+  usePool: 0
+  _catUnit: {fileID: -6125665025104561649, guid: e7ae3c5c7da8c4dadbafbabb187578c4, type: 3}
   boss: {fileID: 0}
   startZ: 0
   endZ: 0
@@ -349,7 +349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _noise: 0
   Spread: 0.19
-  amount: 1
+  amount: 22
   radius: 0.99
   radiusGrowthMultiplier: 0.03
   rotations: 3.02

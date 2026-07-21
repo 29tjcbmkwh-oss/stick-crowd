@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using _Scripts.Utilities;
 
 public static class CharacterSwap
 {
@@ -31,8 +32,8 @@ public static class CharacterSwap
             if (avatar == null) throw new Exception("No Humanoid avatar generated for the character FBX");
 
             var controller = BuildController();
-            var blue   = Mat("Mat_HCBlue",   new Color(0.20f, 0.48f, 1.00f));
-            var orange = Mat("Mat_HCOrange", new Color(1.00f, 0.55f, 0.12f));
+            var blue   = Mat("Mat_HCBlue",   BrandPalette.Blue);
+            var orange = Mat("Mat_HCOrange", BrandPalette.Orange);
 
             SwapCharacter(CatPrefab, controller, avatar, blue, 1.0f);
             SwapCharacter(BossPrefab, controller, avatar, orange, 2.2f);
@@ -104,7 +105,9 @@ public static class CharacterSwap
         var m = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (m == null) { m = new Material(Shader.Find("Standard")); AssetDatabase.CreateAsset(m, path); }
         m.SetColor("_Color", c);
+        // Toy-plastic look per the Visual Reskin Spec: flat matte, no metallic response.
         if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.15f);
+        if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
         EditorUtility.SetDirty(m);
         return m;
     }

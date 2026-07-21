@@ -9,6 +9,12 @@ namespace _Scripts.Ads
     /// no manual scene setup is required. Depends on nothing in this project, so it drops
     /// unchanged into any future reskin.
     ///
+    /// Ad-service init is gated behind ConsentGate (GDPR/UK via Google UMP), so
+    /// IsInterstitialReady/IsRewardedReady correctly report false until consent resolves and
+    /// the underlying SDK finishes loading its first ads — same "no ad ready yet, don't block
+    /// gameplay" shape callers already handle, just possibly true for slightly longer on
+    /// first launch in the EEA/UK while the consent form is shown.
+    ///
     /// Usage from gameplay code:
     ///   AdManager.Instance.NotifyGameOver();                       // interstitial every Nth loss
     ///   AdManager.Instance.ShowRewarded(onEarned, onFailed);       // e.g. revive / 2x coins
@@ -43,7 +49,11 @@ namespace _Scripts.Ads
 #else
             _service = new NullAdService();
 #endif
-            _service.Initialize();
+            // Consent (GDPR/UK via Google UMP) must resolve before the first ad request.
+            // ConsentGate no-ops straight to onReady when ADMOB_ENABLED isn't set, or
+            // immediately outside the EEA/UK once UMP determines consent isn't required —
+            // so this never adds a real delay for the common case, only when a form is due.
+            ConsentGate.RequestConsent(() => _service.Initialize());
         }
 
         public bool IsInterstitialReady => _service != null && _service.IsInterstitialReady;

@@ -142,9 +142,11 @@ public static class VisualOverhaul
     {
         var scene = EditorSceneManager.OpenScene("Assets/Scenes/Level.unity", OpenSceneMode.Single);
 
-        // Built-in procedural skybox (guaranteed to build on mobile), tuned BRIGHT + thin
-        // atmosphere for a clean blue sky. The earlier murk was heavy fog + dark tint, not
-        // the shader — so: bright tint, light ground, minimal fog.
+        // Visual Reskin Spec 2026-07-20: pale-blue-to-white gradient skybox (#DFF1FF ->
+        // #FFFFFF), replacing the earlier vivid-blue procedural sky. Built-in procedural
+        // skybox shader (guaranteed to build on mobile) tuned toward a soft, airy, almost-flat
+        // gradient rather than a saturated "vivid sky" — the top viral crowd-runners read as
+        // bright and toy-like, not scenic.
         var sky = AssetDatabase.LoadAssetAtPath<Material>($"{MatDir}/Mat_Sky.mat");
         var proc = Shader.Find("Skybox/Procedural");
         if (sky == null || sky.shader != proc)
@@ -153,24 +155,27 @@ public static class VisualOverhaul
             sky = new Material(proc);
             AssetDatabase.CreateAsset(sky, $"{MatDir}/Mat_Sky.mat");
         }
-        sky.SetColor("_SkyTint", new Color(0.35f, 0.60f, 1.00f));    // vivid blue
-        sky.SetColor("_GroundColor", new Color(0.75f, 0.86f, 1.00f)); // light horizon, not dark
-        sky.SetFloat("_AtmosphereThickness", 0.55f);                 // thin = crisp, not hazy
-        sky.SetFloat("_SunSize", 0.015f);
-        sky.SetFloat("_Exposure", 1.35f);                            // bright
+        sky.SetColor("_SkyTint", BrandPalette.SkyTop);         // #DFF1FF, pale blue
+        sky.SetColor("_GroundColor", BrandPalette.SkyHorizon); // #FFFFFF, white horizon
+        sky.SetFloat("_AtmosphereThickness", 0.35f);           // thinner = softer gradient, less "sky drama"
+        sky.SetFloat("_SunSize", 0.01f);
+        sky.SetFloat("_Exposure", 1.25f);
         EditorUtility.SetDirty(sky);
         RenderSettings.skybox = sky;
 
-        // Only a whisper of far fog to the bright horizon so the track edge fades cleanly.
+        // Only a whisper of far fog fading to white so the track edge disappears cleanly
+        // instead of hard-clipping — kept minimal so it never reads as "murky."
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.Linear;
-        RenderSettings.fogColor = new Color(0.80f, 0.89f, 1.00f);
-        RenderSettings.fogStartDistance = 80f;
-        RenderSettings.fogEndDistance = 190f;
+        RenderSettings.fogColor = BrandPalette.SkyHorizon;
+        RenderSettings.fogStartDistance = 90f;
+        RenderSettings.fogEndDistance = 200f;
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.88f, 0.93f, 1.00f);
-        RenderSettings.ambientEquatorColor = new Color(0.72f, 0.80f, 0.92f);
-        RenderSettings.ambientGroundColor = new Color(0.42f, 0.46f, 0.54f);
+        RenderSettings.ambientSkyColor = BrandPalette.SkyTop;
+        RenderSettings.ambientEquatorColor = new Color(0.93f, 0.95f, 0.98f);
+        // Bright ground bounce (was a dark 0.42/0.46/0.54) — a dark ambient-ground term was
+        // muddying the underside of the crowd against the new light floor.
+        RenderSettings.ambientGroundColor = BrandPalette.GroundLight;
 
         // sun
         var sun = Object.FindObjectsOfType<Light>(true).FirstOrDefault(l => l.type == LightType.Directional);

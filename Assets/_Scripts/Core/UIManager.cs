@@ -76,8 +76,16 @@ namespace _Scripts.Core
             label.fontStyle = FontStyles.Bold;
             label.color = _Scripts.Utilities.BrandPalette.TextPrimary;
             label.fontSize *= sizeMultiplier;
-            label.outlineWidth = 0.2f;
-            label.outlineColor = new Color32(6, 8, 14, 200);
+            // Setting outlineWidth forces TMP to build an outline material instance from the
+            // label's current font material — throws ArgumentNullException if this TMP_Text
+            // has no font asset/material assigned (confirmed crash on levelText/playerCountText
+            // 2026-07-20: their template-authored TMP components never had one wired). Guard
+            // instead of assuming every TMP_Text in this scene is fully configured.
+            if (label.fontSharedMaterial != null)
+            {
+                label.outlineWidth = 0.2f;
+                label.outlineColor = new Color32(6, 8, 14, 200);
+            }
             label.characterSpacing = 1f;
         }
 
@@ -109,7 +117,13 @@ namespace _Scripts.Core
         
         public string SetPlayerCountText(int amount)
         {
-            return playerCountText.text = amount.ToString();
+            string text = playerCountText.text = amount.ToString();
+            // Crowd counter is the number the player stares at most (Visual Reskin Spec §5) —
+            // it must pop on every change, not just silently update.
+            playerCountText.transform.DOKill();
+            playerCountText.transform.localScale = Vector3.one;
+            playerCountText.transform.DOPunchScale(Vector3.one * 0.35f, 0.3f, 6, 0.6f);
+            return text;
         }
         
         public void ActivatePopup(GameObject popupType)
@@ -143,8 +157,11 @@ namespace _Scripts.Core
             {
                 label.fontStyle = FontStyles.Bold;
                 label.color = _Scripts.Utilities.BrandPalette.TextPrimary;
-                label.outlineWidth = 0.2f;
-                label.outlineColor = new Color32(6, 8, 14, 200);
+                if (label.fontSharedMaterial != null) // see StyleHudLabel for why this guard exists
+                {
+                    label.outlineWidth = 0.2f;
+                    label.outlineColor = new Color32(6, 8, 14, 200);
+                }
             }
         }
 

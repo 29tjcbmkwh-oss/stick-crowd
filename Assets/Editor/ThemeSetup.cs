@@ -17,10 +17,12 @@ using _Scripts.Utilities;
 
 public static class ThemeSetup
 {
-    // ---- palette (from the reference clip; gate colors come from the shared brand tokens) ----
-    private static readonly Color VoidGreen   = new Color(0.13f, 0.78f, 0.29f);  // bright flat green background
-    private static readonly Color TrackDark   = new Color(0.16f, 0.14f, 0.19f);  // near-black purple track
-    private static readonly Color WallDark    = new Color(0.24f, 0.21f, 0.29f);
+    // ---- palette: Visual Reskin Spec 2026-07-20 (bright/toy-like, replaces the old dark
+    // track + flat-green void — that dark-track look was a large part of why the build read
+    // as prototype-grade; see the spec's "single biggest art-direction call") ----
+    private static readonly Color SkyFallback = BrandPalette.SkyHorizon;   // flat-color fallback if skybox isn't applied
+    private static readonly Color TrackLight  = BrandPalette.GroundLight; // #EDEFF4
+    private static readonly Color WallLight   = BrandPalette.LaneEdge;    // #C9D2E6, subtle not dark
     private static readonly Color ObstacleRed = new Color(0.95f, 0.23f, 0.25f);  // static hazard prop, not a gate choice
     private static readonly Color GateBlue    = BrandPalette.BlueTranslucent;
     private static readonly Color GateOrange  = BrandPalette.OrangeTranslucent;
@@ -31,8 +33,8 @@ public static class ThemeSetup
     {
         try
         {
-            var trackMat = Opaque("Mat_TrackDark", TrackDark);
-            var wallMat  = Opaque("Mat_WallDark", WallDark);
+            var trackMat = Opaque("Mat_TrackLight", TrackLight);
+            var wallMat  = Opaque("Mat_WallLight", WallLight);
             var obstMat  = Opaque("Mat_ObstacleRed", ObstacleRed);
             var gateBlue   = Transparent("Mat_GateBlue", GateBlue);
             var gateOrange = Transparent("Mat_GateOrange", GateOrange);
@@ -60,7 +62,10 @@ public static class ThemeSetup
         var m = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (m == null) { m = new Material(Shader.Find("Standard")); AssetDatabase.CreateAsset(m, path); }
         m.SetColor("_Color", c);
-        if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.05f);
+        // Flat matte toy look per Visual Reskin Spec: Smoothness ~0.10-0.20, Metallic 0.
+        // (0.05 kept as a slightly flatter floor than crowd materials for the environment.)
+        if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.12f);
+        if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
         EditorUtility.SetDirty(m);
         return m;
     }
@@ -77,6 +82,22 @@ public static class ThemeSetup
         m.DisableKeyword("_ALPHATEST_ON");
         m.EnableKeyword("_ALPHABLEND_ON");
         m.renderQueue = 3000;
+
+        // GATE GLOW — CORRECTED 2026-07-20 (HOD) after the first real gameplay capture.
+        // The original 1.35x emission was tuned for the DARK-track reference and was actively
+        // harmful over the bright environment: emission pushes a colour toward white, 45% alpha
+        // over a white background pushes it toward white again, and the two stacked until the
+        // gates rendered as pale cyan / pale lemon instead of blue / orange. Hue identity beats
+        // glow — the game is literally named after these two colours.
+        // Now: emission is a subtle lift (0.22x) that survives bloom without bleaching the hue,
+        // and saturation comes from the raised alpha in BrandPalette instead.
+        Color glow = new Color(c.r, c.g, c.b) * 0.22f;
+        m.EnableKeyword("_EMISSION");
+        m.SetColor("_EmissionColor", glow);
+        m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+        m.SetFloat("_Glossiness", 0.7f); // glassy sheen, not matte
+        m.SetFloat("_Metallic", 0f);
+
         EditorUtility.SetDirty(m);
         return m;
     }
@@ -169,11 +190,13 @@ public static class ThemeSetup
         var scenePath = "Assets/Scenes/Level.unity";
         var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
 
-        // vivid flat void
+        // Flat-color fallback; VisualOverhaul.cs applies the actual gradient skybox afterward
+        // and switches clearFlags to Skybox — this just avoids a jarring dark camera background
+        // if ThemeSetup is ever run standalone without the visual-overhaul pass following it.
         foreach (var cam in UnityEngine.Object.FindObjectsOfType<Camera>(true))
         {
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = VoidGreen;
+            cam.backgroundColor = SkyFallback;
         }
 
         // proper starting crowd

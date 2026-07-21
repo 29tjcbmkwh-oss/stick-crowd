@@ -100,6 +100,14 @@ namespace _Scripts.Controllers
             
             private void ProgressBar()
             {
+                // UIManager.Instance is assigned in Awake (StaticInstance base). If the Canvas /
+                // UIManager object is inactive or missing from the scene it stays null forever,
+                // and this line — called every FixedUpdate — spams NullReferenceException at
+                // ~50/sec, which tanks the frame rate and buries every other Console message
+                // (observed 2026-07-20: ~8k exceptions). The progress bar is cosmetic; it must
+                // never be able to take down the run. Guard rather than assume the HUD is wired.
+                if (UIManager.Instance == null) return;
+
                 float currentZ = this.transform.position.z;
                 float diffZ = currentZ - startZ;
                 float process = diffZ / totalZ;

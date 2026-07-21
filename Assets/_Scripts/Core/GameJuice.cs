@@ -85,8 +85,13 @@ namespace _Scripts.Core
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = BrandPalette.ForChoice(positive);
-            tmp.outlineWidth = 0.25f;
-            tmp.outlineColor = new Color32(6, 8, 14, 255);
+            // Guard against a null font material the same way UIManager.StyleHudLabel does —
+            // see that method's comment for the exact crash this avoids.
+            if (tmp.fontSharedMaterial != null)
+            {
+                tmp.outlineWidth = 0.25f;
+                tmp.outlineColor = new Color32(6, 8, 14, 255);
+            }
 
             if (go.GetComponent<Billboard>() == null) go.AddComponent<Billboard>();
 
