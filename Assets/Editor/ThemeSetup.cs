@@ -160,14 +160,19 @@ public static class ThemeSetup
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontStyle = FontStyles.Bold;
         tmp.color = Color.white;
-        tmp.outlineWidth = 0.15f;
-        // gate panels lie flat-ish; float the label above the panel, facing the camera (which
-        // looks down the -Z of the track from behind the player → face text back up the track)
-        go.transform.localPosition = new Vector3(0f, 0.6f, 0f);
+        tmp.outlineWidth = 0.2f;
+        tmp.outlineColor = Color.black;
+        // FIXED 2026-07-21 (HOD): this label used to float 0.6 units ABOVE the gate panel as a
+        // separate hovering sign, which read as "on top of" the gate, not part of it (owner
+        // feedback, directly comparing against reference footage where the number is printed ON
+        // the glass). Now sits nearly flush against the panel's own front face — a tiny forward
+        // offset (0.03) only to avoid z-fighting with the gate mesh, no vertical offset at all —
+        // so it reads as printed on the surface instead of a sign hovering over it.
+        go.transform.localPosition = new Vector3(0f, 0f, 0.03f);
         go.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-        go.transform.localScale = Vector3.one * 0.12f;
+        go.transform.localScale = Vector3.one * 0.16f; // slightly larger since it's now on-surface, not elevated
         var rt = tmp.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(20, 6);
+        rt.sizeDelta = new Vector2(20, 8);
     }
 
     private static void ThemePrefab(string path, Material track, Material wall,
@@ -200,8 +205,8 @@ public static class ThemeSetup
         }
 
         // proper starting crowd
-        foreach (var f in UnityEngine.Object.FindObjectsOfType<RadialFormation>(true))
-            if (f.amount < 3) f.amount = 3;
+        foreach (var f in UnityEngine.Object.FindObjectsOfType<FormationBase>(true))
+            if (f.Amount < 3) f.Amount = 3;
 
         // theme anything placed directly in the scene (not via prefabs)
         foreach (var rootGo in scene.GetRootGameObjects())
@@ -261,11 +266,15 @@ public static class ThemeSetup
             EditorUtility.SetDirty(img);
         }
 
+        var crowdCounter = UnityEngine.Object.FindObjectOfType<_Scripts.Core.UIManager>(true)?.playerCountText;
         foreach (var t in UnityEngine.Object.FindObjectsOfType<TextMeshProUGUI>(true))
         {
             var n = t.gameObject.name.ToLowerInvariant();
             t.fontStyle = FontStyles.Bold;
-            if (n.Contains("tap"))       { t.text = "TAP TO PLAY"; t.color = Color.white; }
+            // The crowd counter is a world-space chip over the bright sky — white is invisible
+            // there (UIManager.StyleCrowdCounter owns its look: brand blue + white outline).
+            if (t == crowdCounter)       { t.color = _Scripts.Utilities.BrandPalette.Blue; }
+            else if (n.Contains("tap"))  { t.text = "TAP TO PLAY"; t.color = Color.white; }
             else if (n.Contains("level")) t.color = Color.white;
             else if (n.Contains("count") || n.Contains("score")) t.color = Color.white;
             else                          t.color = Color.white;

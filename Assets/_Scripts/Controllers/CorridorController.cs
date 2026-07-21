@@ -12,25 +12,25 @@ namespace _Scripts.Controllers
         public int score  = 0 ;
         public void CorridorEffect(Corridor corridor, GameObject other)
         {
-            RadialFormation formation = other.GetComponentInParent<RadialFormation>();
+            FormationBase formation = other.GetComponentInParent<FormationBase>();
             if (formation == null) return;
 
             switch (corridor.GetCorridorType())
             {
                 case Constants.CorridorTypes.Increase:
-                    formation.amount += corridor.increaseAmount;
+                    formation.Amount += corridor.increaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
                     break;
                 case Constants.CorridorTypes.Decrease:
-                    formation.amount -= corridor.decreaseAmount;
+                    formation.Amount -= corridor.decreaseAmount;
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
                     break;
                 case Constants.CorridorTypes.Multiply:
-                    formation.amount *= Mathf.Max(1, corridor.multiplyAmount);
+                    formation.Amount *= Mathf.Max(1, corridor.multiplyAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorIncreaseSound);
                     break;
                 case Constants.CorridorTypes.Divide:
-                    formation.amount /= Mathf.Max(1, corridor.divideAmount);
+                    formation.Amount /= Mathf.Max(1, corridor.divideAmount);
                     AudioManager.Instance.PlayOneShot(AudioManager.Instance.doorMinusSound);
                     break;
                 default:
@@ -38,7 +38,7 @@ namespace _Scripts.Controllers
                     break;
             }
 
-            formation.amount = Mathf.Max(0, formation.amount);
+            formation.Amount = Mathf.Max(0, formation.Amount);
 
             GameJuice.OnGatePassed(corridor,
                 corridor.GetCorridorType() is Constants.CorridorTypes.Increase
@@ -46,14 +46,14 @@ namespace _Scripts.Controllers
 
             HapticPatterns.PlayPreset(HapticPatterns.PresetType.SoftImpact);
 
-            score += formation.amount;
+            score += formation.Amount;
             ScoreManager.Instance.upperScoreText.text = score.ToString();
-            
-            GameFlowManager.Instance.SetPlayerCount(formation.amount);
+
+            GameFlowManager.Instance.SetPlayerCount(formation.Amount);
             // Update UI
-            UIManager.Instance.SetPlayerCountText(formation.amount);
+            UIManager.Instance.SetPlayerCountText(formation.Amount);
             // Game Over check
-            if (formation.amount <= 0)
+            if (formation.Amount <= 0)
             {
                 GameFlowManager.Instance.UpdateGameState(GameState.Lose);
             }

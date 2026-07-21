@@ -9,7 +9,7 @@ namespace _Scripts.Core
 {
     public class GameFlowManager : Singleton<GameFlowManager>
     {
-        private RadialFormation _radialFormation;
+        private FormationBase _radialFormation;
         [SerializeField] private GameObject player;
         [HideInInspector] public int playerCount;
         public BattleController battleController;
@@ -31,14 +31,14 @@ namespace _Scripts.Core
         private void Start()
         {
             levelController = this.GetComponent<LevelController>();
-            _radialFormation = player.GetComponent<RadialFormation>();
+            _radialFormation = player.GetComponent<FormationBase>();
             _reviveUsed = s_reviveConsumedForAttempt;
             if (s_rewardedRetryArmySize > 0)
             {
-                _radialFormation.amount = s_rewardedRetryArmySize;
+                _radialFormation.Amount = s_rewardedRetryArmySize;
                 s_rewardedRetryArmySize = 0;
             }
-            playerCount = _radialFormation.amount;
+            playerCount = _radialFormation.Amount;
             if (UIManager.Instance != null)
                 UIManager.Instance.SetPlayerCountText(playerCount);
             UpdateGameState(GameState.Start);
@@ -50,7 +50,7 @@ namespace _Scripts.Core
             if (_lossHandled) return;
             _lossHandled = true;
             PauseGameFlow();
-            _radialFormation.amount = 0;
+            _radialFormation.Amount = 0;
             playerCount = 0;
             UIManager.Instance.playerCountText.text = "0";
             UIManager.Instance.ActivatePopup(UIManager.Instance.gameOverPanel);

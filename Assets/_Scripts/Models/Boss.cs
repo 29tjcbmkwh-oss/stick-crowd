@@ -27,7 +27,7 @@ public class Boss : MonoBehaviour
         {
             GameFlowManager.Instance.UpdateGameState(GameState.Battle);
             this.GetComponent<Collider>().isTrigger = false;
-            forceMultiplier = other.transform.parent.GetComponent<RadialFormation>().amount;
+            forceMultiplier = other.transform.parent.GetComponent<FormationBase>().Amount;
         }
     }
 

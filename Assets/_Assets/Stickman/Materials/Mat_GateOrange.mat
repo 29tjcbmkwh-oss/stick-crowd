@@ -10,6 +10,7 @@ Material:
   m_Name: Mat_GateOrange
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ValidKeywords:
+  - _ALPHABLEND_ON
   - _ALPHAPREMULTIPLY_ON
   - _EMISSION
   m_InvalidKeywords: []
@@ -74,10 +75,10 @@ Material:
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:
-    - _Color: {r: 1, g: 0.4784, b: 0.1843, a: 0.45}
-    - _EmissionColor: {r: 0.55, g: 0.26312, b: 0.10136501, a: 0.55}
+    - _Color: {r: 1, g: 0.4784, b: 0.1843, a: 0.82}
+    - _EmissionColor: {r: 0.22, g: 0.105248, b: 0.040546, a: 0.22}
   m_BuildTextureStacks: []

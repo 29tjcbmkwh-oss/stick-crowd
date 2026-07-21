@@ -28,21 +28,21 @@ public class Obstacle : MonoBehaviour
     {
         if (!other.CompareTag("Cat")) return;
         
-        RadialFormation formation = other.GetComponentInParent<RadialFormation>();
+        FormationBase formation = other.GetComponentInParent<FormationBase>();
         ArmyController army = other.GetComponentInParent<ArmyController>();
         if (formation == null || army == null) return;
 
-        formation.amount = Mathf.Max(0, formation.amount - Mathf.Max(1, decreaseAmount));
+        formation.Amount = Mathf.Max(0, formation.Amount - Mathf.Max(1, decreaseAmount));
         fpxGo = Instantiate(catDeadFpx).gameObject;
         fpxGo.transform.position = new Vector3(other.transform.position.x, other.transform.position.y + 0.35F , other.transform.position.z);
-        
+
         army.KillGameObject(other.gameObject);
-        GameFlowManager.Instance.SetPlayerCount(formation.amount);
-        UIManager.Instance.SetPlayerCountText(formation.amount);
+        GameFlowManager.Instance.SetPlayerCount(formation.Amount);
+        UIManager.Instance.SetPlayerCountText(formation.Amount);
         // Update UI
-        // UIManager.Instance.SetPlayerCountText(other.transform.parent.GetComponent<RadialFormation>().amount);
+        // UIManager.Instance.SetPlayerCountText(other.transform.parent.GetComponent<FormationBase>().Amount);
         // Game Over check
-        if (formation.amount <= 0)
+        if (formation.Amount <= 0)
         {
             GameFlowManager.Instance.UpdateGameState(GameState.Lose);
         }

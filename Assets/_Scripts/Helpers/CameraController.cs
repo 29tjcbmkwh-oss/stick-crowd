@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour
     public Transform target;
     private Vector3 temp;
     public bool lockCamera;
-    public RadialFormation formationArmy;
+    public FormationBase formationArmy;
     void FixedUpdate()
     {
         if (!lockCamera)
@@ -21,7 +21,7 @@ public class CameraController : MonoBehaviour
             temp.y = 0;
              // temp.x = 0;
              transform.position = Vector3.Lerp(transform.position, temp+ new Vector3(offset.x, 
-                 offset.y + formationArmy.amount / 25, offset.z - formationArmy.amount / 25), 5*Time.deltaTime);
+                 offset.y + formationArmy.Amount / 25, offset.z - formationArmy.Amount / 25), 5*Time.deltaTime);
         }
     }
 }

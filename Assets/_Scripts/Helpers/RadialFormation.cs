@@ -4,13 +4,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class RadialFormation : FormationBase {
-    public int amount = 1;
+    [SerializeField] private int amount = 1;
     public float radius = 0.5F;
     public float radiusGrowthMultiplier = 0;
     public float rotations = 1;
     public int rings = 1;
     public float ringOffset = 1;
     public float nthOffset = 0;
+
+    public override int Amount { get => amount; set => amount = value; }
 
     public override IEnumerable<Vector3> EvaluatePoints() {
         int safeAmount = Mathf.Max(0, amount);

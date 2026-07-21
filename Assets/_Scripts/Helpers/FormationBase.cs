@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class FormationBase : MonoBehaviour {
     [SerializeField] [Range(0, 1)] protected float _noise = 0;
     [SerializeField] protected float Spread = 1;
+    public abstract int Amount { get; set; }
     public abstract IEnumerable<Vector3> EvaluatePoints();
 
     protected Vector3 GetNoise(Vector3 pos) {

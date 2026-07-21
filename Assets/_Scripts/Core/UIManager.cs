@@ -56,7 +56,7 @@ namespace _Scripts.Core
         private void PolishHud()
         {
             StyleHudLabel(levelText, 0.85f);
-            StyleHudLabel(playerCountText, 1f);
+            StyleCrowdCounter(playerCountText);
             if (ScoreManager.Instance != null) StyleHudLabel(ScoreManager.Instance.upperScoreText, 1f);
 
             if (progressBar != null)
@@ -68,6 +68,24 @@ namespace _Scripts.Core
                 if (track != null && track != progressBar)
                     track.color = new Color(0f, 0f, 0f, 0.35f);
             }
+        }
+
+        // The crowd counter is a world-space chip floating above the mob, not corner HUD chrome,
+        // so it can't use StyleHudLabel's near-white TextPrimary — that's near-invisible against
+        // this build's bright sky/track. Brand blue fill with a thick white outline keeps it
+        // readable both against the pale environment and against the blue crowd behind it, and
+        // holds up at thumbnail size (Visual Reskin Spec §5 / ASO addendum).
+        private static void StyleCrowdCounter(TMP_Text label)
+        {
+            if (label == null) return;
+            label.fontStyle = FontStyles.Bold;
+            label.color = _Scripts.Utilities.BrandPalette.Blue;
+            if (label.fontSharedMaterial != null)
+            {
+                label.outlineWidth = 0.35f;
+                label.outlineColor = Color.white;
+            }
+            label.characterSpacing = 1f;
         }
 
         private static void StyleHudLabel(TMP_Text label, float sizeMultiplier)

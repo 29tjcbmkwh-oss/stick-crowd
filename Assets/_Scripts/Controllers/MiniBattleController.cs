@@ -19,8 +19,8 @@ namespace _Scripts.Controllers
 
         private void OnTriggerEnter(Collider other)
         {
-            RadialFormation playerFormation = other.GetComponentInParent<RadialFormation>();
-            if (playerFormation == null || playerFormation.amount <= 0) return;
+            FormationBase playerFormation = other.GetComponentInParent<FormationBase>();
+            if (playerFormation == null || playerFormation.Amount <= 0) return;
 
             AudioManager.Instance.PlayFightSound(AudioManager.Instance.cartoonFightSound );
             this.GetComponent<Collider>().enabled = false;
@@ -31,23 +31,23 @@ namespace _Scripts.Controllers
             StartCoroutine(DecreaseArmyOverTime(playerFormation));
         }
 
-        private IEnumerator DecreaseArmyOverTime(RadialFormation playerFormation)
+        private IEnumerator DecreaseArmyOverTime(FormationBase playerFormation)
         {
             corridorEnemyCount = Mathf.Max(0, corridorEnemyCount);
 
-            while (corridorEnemyCount > 0 && playerFormation.amount > 0)
+            while (corridorEnemyCount > 0 && playerFormation.Amount > 0)
             {
                 corridorEnemyCount = Mathf.Max(0, corridorEnemyCount - 1);
-                playerFormation.amount = Mathf.Max(0, playerFormation.amount - 1);
-                GameFlowManager.Instance.SetPlayerCount(playerFormation.amount);
-                UIManager.Instance.SetPlayerCountText(playerFormation.amount);
+                playerFormation.Amount = Mathf.Max(0, playerFormation.Amount - 1);
+                GameFlowManager.Instance.SetPlayerCount(playerFormation.Amount);
+                UIManager.Instance.SetPlayerCountText(playerFormation.Amount);
 
                 yield return _getWait;
             }
 
             AudioManager.Instance.StopFightSound();
             GameFlowManager.Instance.UpdateGameState(
-                playerFormation.amount > 0 ? GameState.Game : GameState.Lose);
+                playerFormation.Amount > 0 ? GameState.Game : GameState.Lose);
             gameObject.SetActive(false);
             if (createdParticleSystem != null) Destroy(createdParticleSystem);
         }
