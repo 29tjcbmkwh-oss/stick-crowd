@@ -59,7 +59,9 @@ public class ScoreManager : Singleton<ScoreManager>
     {
         if (_runRewardGranted) return;
         _runRewardGranted = true;
-        LastRunReward = Mathf.Max(1, amount);
+        // Flat +100 completion bonus independent of score (HOD Group B item 2, MR-recommended:
+        // compresses the good-vs-bad-run income spread so weak runs still feel rewarded).
+        LastRunReward = Mathf.Max(1, amount) + 100;
         AddCoins(LastRunReward);
         UpdateRecords(LastRunReward);
     }

@@ -103,7 +103,12 @@ public static class PostProcessingSetup
         PostProcessVolume volume = go.GetComponent<PostProcessVolume>();
         if (volume == null) volume = go.AddComponent<PostProcessVolume>();
         volume.isGlobal = true;
-        volume.profile = profile;
+        // sharedProfile, NOT .profile: at edit time `.profile` clones an in-memory instance
+        // and leaves the serialized sharedProfile field null — the scene saved with
+        // sharedProfile {fileID: 0} and post-processing silently never rendered (caught by
+        // pixel-measuring the 20:38 capture: corner/center luminance ratio exactly 1.000,
+        // i.e. zero vignette despite a "SUCCESS" setup log).
+        volume.sharedProfile = profile;
         volume.priority = 0;
         volume.weight = 1f;
 
