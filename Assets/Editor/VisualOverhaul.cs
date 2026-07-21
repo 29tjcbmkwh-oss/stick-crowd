@@ -30,6 +30,7 @@ public static class VisualOverhaul
             ThemeGatesInPrefab("Assets/_Assets/ENV/Level1.prefab", plate);
             ThemeGatesInPrefab("Assets/_Assets/ENV/Corridor1.prefab", plate);
             AddCounterBubble();
+            DressBossArena();
             OverhaulScene(plate);
             AssetDatabase.SaveAssets();
             Debug.Log("[VisualOverhaul] SUCCESS — gradient sky, readable gates, lighting applied.");
@@ -307,6 +308,69 @@ public static class VisualOverhaul
         so.ApplyModifiedProperties();
         EditorUtility.SetDirty(TMP_Settings.instance);
         Debug.Log("[VisualOverhaul] TMP default font -> LiberationSans SDF (RussoOne SDF asset is broken; needs GUI rebuild)");
+    }
+
+    // HOD P4: the boss stood in a pale void — no staging, no "final confrontation" read.
+    // Reference frames show a castle silhouette behind the boss. Dressing lives inside
+    // LevelEndBoss.prefab so every runtime level clone inherits it: a ring of dark navy
+    // towers (castle silhouette) behind the boss and a danger-red arena disc under him.
+    private static void DressBossArena()
+    {
+        const string prefabPath = "Assets/_Assets/ENEMY/LevelEndBoss.prefab";
+        var root = PrefabUtility.LoadPrefabContents(prefabPath);
+        try
+        {
+            const string dressName = "ArenaDressing";
+            if (root.transform.Find(dressName) == null)
+            {
+                var dress = new GameObject(dressName).transform;
+                dress.SetParent(root.transform, false);
+
+                var towerMat = FlatMat("Mat_ArenaTower", new Color(0.10f, 0.13f, 0.22f, 1f)); // navy silhouette
+                var floorMat = FlatMat("Mat_ArenaFloor", new Color(1f, 0.36f, 0.25f, 1f));    // danger red-orange
+
+                // castle silhouette: five towers arced behind the boss (+z is behind him
+                // from the player's approach)
+                float[][] towers = {
+                    new[] { -4.5f, 3.6f, 7f },  // x, height, z
+                    new[] { -2.2f, 5.2f, 8.5f },
+                    new[] {  0.0f, 6.5f, 9.5f },
+                    new[] {  2.2f, 5.2f, 8.5f },
+                    new[] {  4.5f, 3.6f, 7f },
+                };
+                foreach (var t in towers)
+                {
+                    var tower = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    tower.name = "Tower";
+                    Object.DestroyImmediate(tower.GetComponent<Collider>());
+                    tower.transform.SetParent(dress, false);
+                    tower.transform.localPosition = new Vector3(t[0], -1.45f + t[1] * 0.5f, t[2]); // boss root is ~1.45 above the track
+                    tower.transform.localScale = new Vector3(1.6f, t[1], 1.6f);
+                    tower.GetComponent<MeshRenderer>().sharedMaterial = towerMat;
+                    // crenellation cap
+                    var cap = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cap.name = "TowerCap";
+                    Object.DestroyImmediate(cap.GetComponent<Collider>());
+                    cap.transform.SetParent(dress, false);
+                    cap.transform.localPosition = new Vector3(t[0], -1.45f + t[1] + 0.25f, t[2]);
+                    cap.transform.localScale = new Vector3(2.1f, 0.5f, 2.1f);
+                    cap.GetComponent<MeshRenderer>().sharedMaterial = towerMat;
+                }
+
+                // arena disc under the boss — flattened cylinder, reads as the danger zone
+                var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                disc.name = "ArenaFloor";
+                Object.DestroyImmediate(disc.GetComponent<Collider>());
+                disc.transform.SetParent(dress, false);
+                disc.transform.localPosition = new Vector3(0f, -1.3f, 2.1f); // just above the track surface
+                disc.transform.localScale = new Vector3(7f, 0.04f, 7f);
+                disc.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
+
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+                Debug.Log("[VisualOverhaul] boss arena dressed (castle silhouette + arena disc)");
+            }
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
     }
 
     private const string TexDir = "Assets/_Assets/Stickman/Textures";
