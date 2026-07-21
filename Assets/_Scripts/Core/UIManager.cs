@@ -28,6 +28,9 @@ namespace _Scripts.Core
     
         public Sprite toggleOff;
         public Sprite toggleOn;
+        // rounded sprite for the win-screen coin fountain; assigned by ThemeSetup.StyleUI
+        // at editor time since runtime code can't load loose _Assets sprites
+        public Sprite coinSprite;
         public Image progressBar;
         public GameObject levelCountUIObject;
         public GameObject progressBarUIObject;
@@ -284,6 +287,37 @@ namespace _Scripts.Core
             label.characterSpacing = 2;
             label.raycastTarget = false;
             if (TMP_Settings.defaultFontAsset != null) label.font = TMP_Settings.defaultFontAsset;
+        }
+
+        // Reference win screen has a coin-fountain burst over the panel (HOD dispatch,
+        // Count Master reference). UI-layer coins, not world particles — the win panel's
+        // opaque navy backdrop would hide anything in world space behind it.
+        public void PlayCoinFountain()
+        {
+            if (gameWinPanel == null) return;
+            var parent = gameWinPanel.transform;
+            var gold = new Color(1f, 0.82f, 0.25f, 1f);
+            for (int i = 0; i < 26; i++)
+            {
+                var coin = new GameObject("Coin", typeof(RectTransform));
+                coin.transform.SetParent(parent, false);
+                var img = coin.AddComponent<Image>();
+                img.sprite = coinSprite;
+                img.color = gold;
+                img.raycastTarget = false;
+                var rt = (RectTransform)coin.transform;
+                rt.sizeDelta = new Vector2(26f, 26f);
+                rt.anchoredPosition = new Vector2(0f, -220f);
+
+                float delay = UnityEngine.Random.Range(0f, 0.35f);
+                float upX = UnityEngine.Random.Range(-260f, 260f);
+                float upY = UnityEngine.Random.Range(240f, 480f);
+                var seq = DG.Tweening.DOTween.Sequence().SetDelay(delay);
+                seq.Append(rt.DOAnchorPos(new Vector2(upX, upY), 0.5f).SetEase(DG.Tweening.Ease.OutQuad));
+                seq.Append(rt.DOAnchorPos(new Vector2(upX * 1.2f, -320f), 0.65f).SetEase(DG.Tweening.Ease.InQuad));
+                seq.Join(img.DOFade(0f, 0.5f).SetDelay(0.35f));
+                seq.OnComplete(() => Destroy(coin));
+            }
         }
 
         public void HideOutcomePanels()

@@ -43,7 +43,8 @@ public class ScoreManager : Singleton<ScoreManager>
     {
         int corridorScore = CorridorController.Instance != null ? CorridorController.Instance.score : 0;
         int total = Mathf.Max(1, corridorScore + Mathf.RoundToInt(CalculateLevelEndBonus(boss)));
-        if (endGameScoreText != null) endGameScoreText.text = total.ToString();
+        // "EARNED +N" phrasing per the Count Master reference win screen (HOD dispatch)
+        if (endGameScoreText != null) endGameScoreText.text = $"EARNED +{total}";
         GrantRunReward(total);
     }
 

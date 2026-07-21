@@ -30,6 +30,7 @@ namespace _Scripts.Core
                     PlayConfetti();
                     CrowdVictoryJump();
                     FovKick(6f, 0.25f);
+                    if (UIManager.Instance != null) UIManager.Instance.PlayCoinFountain();
                     break;
                 case GameState.Lose:
                     CrowdSlump();

@@ -121,6 +121,14 @@ public static class VisualOverhaul
         foreach (var corridor in root.GetComponentsInChildren<Corridor>(true))
             AddGatePosts(corridor);
 
+        // A6: health bar on every boss IN THE PREFAB — the live boss at runtime is a fresh
+        // clone of the level prefab (LevelController instantiates it; the scene's own Level1
+        // instance stays inactive), so a component added to a scene instance never reaches
+        // the boss the player actually fights. Prefab-level addition survives cloning.
+        foreach (var b in root.GetComponentsInChildren<Boss>(true))
+            if (b.GetComponent<_Scripts.Models.BossHealthBar>() == null)
+                b.gameObject.AddComponent<_Scripts.Models.BossHealthBar>();
+
         return count;
     }
 
@@ -390,6 +398,11 @@ public static class VisualOverhaul
         AddTrackChevrons();   // A2: forward chevrons kill the blank-page track
         AddFinishLine();      // A5: checkered strip before the boss arena
         AddOuterWater();      // A3: saturated plane outside the track instead of white void
+
+        // A6: boss health bar (world-space, code-built by the component itself at runtime)
+        var boss = Object.FindObjectOfType<Boss>(true);
+        if (boss != null && boss.GetComponent<_Scripts.Models.BossHealthBar>() == null)
+            boss.gameObject.AddComponent<_Scripts.Models.BossHealthBar>();
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);

@@ -354,6 +354,85 @@ public static class ThemeSetup
             if (back != null) { back.color = chipDark; EditorUtility.SetDirty(back); }
         }
 
+        StyleWinPanel(uim);
+
         Debug.Log("[ThemeSetup] UI styled (panels translucent, buttons blue, text white)");
+    }
+
+    // Reference win screen (HOD dispatch, Count Master frames): dark navy backdrop,
+    // "EARNED +N" (text set by ScoreManager at runtime), coin fountain (UIManager, runtime),
+    // and ONE large green rounded NEXT LEVEL button. This pass restyles the existing panel's
+    // serialized scene state — same runtime-reference/no-YAML-hand-editing pattern as the
+    // rest of StyleUI.
+    private static void StyleWinPanel(_Scripts.Core.UIManager uim)
+    {
+        if (uim == null || uim.gameWinPanel == null) return;
+        var panel = uim.gameWinPanel;
+
+        var rounded = AssetDatabase.LoadAssetAtPath<Sprite>(
+            "Assets/_Assets/Stickman/Textures/Tex_RoundedRect.png");
+
+        // coin sprite for the runtime fountain
+        if (rounded != null && uim.coinSprite != rounded)
+        { uim.coinSprite = rounded; EditorUtility.SetDirty(uim); }
+
+        // panel backdrop: opaque dark navy
+        var bg = panel.GetComponent<Image>();
+        if (bg != null)
+        {
+            bg.color = new Color(BrandPalette.SurfaceDark.r, BrandPalette.SurfaceDark.g,
+                                 BrandPalette.SurfaceDark.b, 0.97f);
+            if (rounded != null) { bg.sprite = rounded; bg.type = Image.Type.Sliced; }
+            EditorUtility.SetDirty(bg);
+        }
+
+        var green = new Color(0.24f, 0.83f, 0.39f, 1f);
+        foreach (var button in panel.GetComponentsInChildren<Button>(true))
+        {
+            // Only the actual next-level button gets the big green treatment + label —
+            // the panel may also hold e.g. the double-reward ad button, which must keep
+            // its own identity.
+            bool isNextLevel = false;
+            for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+                if (button.onClick.GetPersistentMethodName(i) == "NextLevelButton") isNextLevel = true;
+            if (!isNextLevel) continue;
+
+            var img = button.GetComponent<Image>();
+            if (img != null)
+            {
+                img.color = green;
+                if (rounded != null) { img.sprite = rounded; img.type = Image.Type.Sliced; }
+                EditorUtility.SetDirty(img);
+            }
+            var rt = (RectTransform)button.transform;
+            if (rt.sizeDelta.x > 0 && rt.sizeDelta.x < 420f)
+            { rt.sizeDelta = new Vector2(Mathf.Max(rt.sizeDelta.x, 380f), Mathf.Max(rt.sizeDelta.y, 110f)); EditorUtility.SetDirty(rt); }
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+            { label.text = "NEXT LEVEL"; label.color = Color.white; label.fontStyle = FontStyles.Bold; EditorUtility.SetDirty(label); }
+            var legacyLabel = button.GetComponentInChildren<Text>(true);
+            if (legacyLabel != null)
+            { legacyLabel.text = "NEXT LEVEL"; legacyLabel.color = Color.white; legacyLabel.fontStyle = FontStyle.Bold; EditorUtility.SetDirty(legacyLabel); }
+        }
+
+        foreach (var t in panel.GetComponentsInChildren<TMP_Text>(true))
+        { t.color = Color.white; EditorUtility.SetDirty(t); }
+
+        // The earned-score text rect was authored for a 3-4 digit number; "EARNED +210"
+        // wrapped one syllable per line in the 19:02 win capture. Wide rect, no wrap,
+        // autosized.
+        var score = UnityEngine.Object.FindObjectOfType<ScoreManager>(true);
+        if (score != null && score.endGameScoreText != null)
+        {
+            var st = score.endGameScoreText;
+            st.enableWordWrapping = false;
+            st.enableAutoSizing = true;
+            st.fontSizeMin = 24f;
+            st.fontSizeMax = 96f;
+            st.alignment = TextAlignmentOptions.Center;
+            var srt = st.rectTransform;
+            srt.sizeDelta = new Vector2(760f, 150f);
+            EditorUtility.SetDirty(st);
+        }
     }
 }

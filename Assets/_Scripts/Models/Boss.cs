@@ -27,7 +27,13 @@ public class Boss : MonoBehaviour
         {
             GameFlowManager.Instance.UpdateGameState(GameState.Battle);
             this.GetComponent<Collider>().isTrigger = false;
-            forceMultiplier = other.transform.parent.GetComponent<FormationBase>().Amount;
+            // Clamped: the eject impulse is force*10, tuned for crowds of ~20-50. An unclamped
+            // 168-crowd launched the ball clean off the world — it never came to rest, the
+            // velocity==zero win check never fired, and the game sat in Battle state forever
+            // with the camera chasing the ball into the sky (caught by the 18:59 timeout
+            // capture). The bonus strip maxes out at point100 anyway, so the clamp loses no
+            // real reward range.
+            forceMultiplier = Mathf.Min(other.transform.parent.GetComponent<FormationBase>().Amount, 60);
         }
     }
 
