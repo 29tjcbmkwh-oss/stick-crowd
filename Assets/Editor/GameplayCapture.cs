@@ -133,4 +133,5 @@ public static class GameplayCapture
             CurrentState = State.Idle;
         }
     }
+
 }

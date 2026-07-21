@@ -70,20 +70,19 @@ namespace _Scripts.Core
             }
         }
 
-        // The crowd counter is a world-space chip floating above the mob, not corner HUD chrome,
-        // so it can't use StyleHudLabel's near-white TextPrimary — that's near-invisible against
-        // this build's bright sky/track. Brand blue fill with a thick white outline keeps it
-        // readable both against the pale environment and against the blue crowd behind it, and
-        // holds up at thumbnail size (Visual Reskin Spec §5 / ASO addendum).
+        // The crowd counter sits on the brand-blue speech-bubble chip (added by
+        // VisualOverhaul.AddCounterBubble per HOD A-list A4) — white bold number on blue, like
+        // the genre reference. The previous brand-blue fill predates the chip and rendered
+        // blue-on-blue (invisible) once the chip existed.
         private static void StyleCrowdCounter(TMP_Text label)
         {
             if (label == null) return;
             label.fontStyle = FontStyles.Bold;
-            label.color = _Scripts.Utilities.BrandPalette.Blue;
+            label.color = Color.white;
             if (label.fontSharedMaterial != null)
             {
-                label.outlineWidth = 0.35f;
-                label.outlineColor = Color.white;
+                label.outlineWidth = 0.12f;
+                label.outlineColor = new Color32(15, 20, 32, 200); // subtle dark edge for thumbnail pop
             }
             label.characterSpacing = 1f;
         }

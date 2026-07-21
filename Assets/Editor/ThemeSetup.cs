@@ -25,7 +25,10 @@ public static class ThemeSetup
     private static readonly Color WallLight   = BrandPalette.LaneEdge;    // #C9D2E6, subtle not dark
     private static readonly Color ObstacleRed = new Color(0.95f, 0.23f, 0.25f);  // static hazard prop, not a gate choice
     private static readonly Color GateBlue    = BrandPalette.BlueTranslucent;
-    private static readonly Color GateOrange  = BrandPalette.OrangeTranslucent;
+    // Danger gates use #FF4D2F (spec §1 lists it as the danger alternative), NOT brand orange:
+    // orange is OUR enemy-crowd color, so orange-as-danger-gate collides with our own IP
+    // (HOD A-list item A8, 2026-07-21). Red-family danger also matches the genre reference.
+    private static readonly Color GateOrange  = new Color(1f, 0.302f, 0.184f, 0.82f);
     private const string MatDir = "Assets/_Assets/Stickman/Materials";
 
     [MenuItem("Tools/Stickman/Apply Theme")]
@@ -299,6 +302,12 @@ public static class ThemeSetup
         foreach (var img in UnityEngine.Object.FindObjectsOfType<Image>(true))
         {
             var n = img.gameObject.name.ToLowerInvariant();
+            // The world-space counter bubble + tail are brand blue by spec (A4: white number
+            // on brand-blue speech bubble). "counterbubble" contains "count", so without this
+            // exemption the chipDark branch below repaints it dark every theme pass.
+            if (n == "counterbubble" || (n == "tail" && img.transform.parent != null &&
+                img.transform.parent.name == "CounterBubble"))
+            { img.color = BrandPalette.Blue; EditorUtility.SetDirty(img); continue; }
             var isButton = n.Contains("button") || n.Contains("restart") || n.Contains("start");
             if (n.Contains("panelback") || n.Contains("allpanels"))
                 img.color = dim;                              // was solid white, hid the game
@@ -320,9 +329,10 @@ public static class ThemeSetup
         {
             var n = t.gameObject.name.ToLowerInvariant();
             t.fontStyle = FontStyles.Bold;
-            // The crowd counter is a world-space chip over the bright sky — white is invisible
-            // there (UIManager.StyleCrowdCounter owns its look: brand blue + white outline).
-            if (t == crowdCounter)       { t.color = _Scripts.Utilities.BrandPalette.Blue; }
+            // The crowd counter sits on the brand-blue bubble chip (VisualOverhaul
+            // AddCounterBubble) — white-on-blue. The old brand-blue-text rule predates the
+            // chip and made the number invisible against its own background.
+            if (t == crowdCounter)       { t.color = Color.white; }
             else if (n.Contains("tap"))  { t.text = "TAP TO PLAY"; t.color = Color.white; }
             else if (n.Contains("level")) t.color = Color.white;
             else if (n.Contains("count") || n.Contains("score")) t.color = Color.white;
