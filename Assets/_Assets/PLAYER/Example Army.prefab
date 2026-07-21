@@ -350,9 +350,9 @@ MonoBehaviour:
   _noise: 0
   Spread: 0.19
   amount: 22
-  radius: 0.99
-  radiusGrowthMultiplier: 0.03
+  radius: 6.93
+  radiusGrowthMultiplier: 0.21
   rotations: 3.02
   rings: 1
-  ringOffset: 1
+  ringOffset: 7
   nthOffset: 0
