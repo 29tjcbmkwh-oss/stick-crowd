@@ -14,6 +14,11 @@ public static class GameplayCapture
 {
     private const string Marker = "/Users/a/blue-vs-orange-runner/base/capture-gameplay-request";
     public const string OutputPath = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture.png";
+    // Later-run shots (HOD directive 2026-07-21 item 4): the first shot lands ~1 gate into
+    // the run, which left the checker line, boss arena, and win screen permanently
+    // unverified. Mid catches the track past the first gates; end catches boss/outcome.
+    public const string OutputPathMid = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-mid.png";
+    public const string OutputPathEnd = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-end.png";
 
     private enum State { Idle, RequestedPlay, WaitingInPlayMode, Captured }
 
@@ -59,6 +64,21 @@ public static class GameplayCapture
     // seconds to spawn and move down the track before shooting. Timeline below.
     private const double SecondsBeforeStartingRun = 3.0; // let the ~2.3s splash fully clear first
     private const double SecondsToWaitBeforeCapture = 8.0; // 5s of live gameplay after run start
+    private const double SecondsForMidCapture = 18.0;      // past the first gates
+    private const double SecondsForEndCapture = 32.0;      // boss arena / outcome screen
+
+    private const string Shot1Key = "GameplayCapture_Shot1";
+    private const string Shot2Key = "GameplayCapture_Shot2";
+    private static bool Shot1Done
+    {
+        get => SessionState.GetBool(Shot1Key, false);
+        set => SessionState.SetBool(Shot1Key, value);
+    }
+    private static bool Shot2Done
+    {
+        get => SessionState.GetBool(Shot2Key, false);
+        set => SessionState.SetBool(Shot2Key, value);
+    }
 
     static GameplayCapture()
     {
@@ -115,21 +135,36 @@ public static class GameplayCapture
                 RunStarted = true;
             }
 
-            if (elapsed < SecondsToWaitBeforeCapture) return;
-
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath) !);
-            ScreenCapture.CaptureScreenshot(OutputPath);
-            Debug.Log($"[GameplayCapture] SUCCESS — screenshot requested at {OutputPath}");
-            CurrentState = State.Captured;
+            if (!Shot1Done && elapsed >= SecondsToWaitBeforeCapture)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPath);
+                Shot1Done = true;
+                Debug.Log($"[GameplayCapture] shot 1 (early run) requested at {OutputPath}");
+            }
+            if (!Shot2Done && elapsed >= SecondsForMidCapture)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPathMid);
+                Shot2Done = true;
+                Debug.Log($"[GameplayCapture] shot 2 (mid run) requested at {OutputPathMid}");
+            }
+            if (elapsed >= SecondsForEndCapture)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPathEnd);
+                Debug.Log($"[GameplayCapture] shot 3 (end/boss) requested at {OutputPathEnd} — SUCCESS");
+                CurrentState = State.Captured;
+            }
             return;
         }
 
         if (CurrentState == State.Captured)
         {
             // CaptureScreenshot writes asynchronously (end of frame); give it one extra
-            // frame before leaving Play Mode so the file is actually flushed to disk.
-            if (!File.Exists(OutputPath)) return;
+            // frame before leaving Play Mode so the files are actually flushed to disk.
+            if (!File.Exists(OutputPathEnd)) return;
             EditorApplication.isPlaying = false;
+            Shot1Done = false;
+            Shot2Done = false;
             CurrentState = State.Idle;
         }
     }

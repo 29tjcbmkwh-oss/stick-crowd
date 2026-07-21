@@ -92,6 +92,7 @@ public static class VisualOverhaul
                     EditorUtility.SetDirty(mat);
                 }
             }
+            SquashGatePanel(corridor);
             count++;
         }
 
@@ -123,6 +124,28 @@ public static class VisualOverhaul
         return count;
     }
 
+    // HOD directive 2026-07-21: reference gates are SHORT-AND-WIDE glass panels; ours were
+    // full-height slabs. Squash the panel to ~0.65 world-units tall, keeping the BOTTOM edge
+    // where it was so the trigger volume still overlaps the crowd's bodies (cat capsules span
+    // ~0.8 units up from the track — a centered squash would lift the gate off the ground and
+    // open a pass-under gap). Idempotent: skips panels already at target height.
+    private static void SquashGatePanel(Corridor c)
+    {
+        var r = c.GetComponent<MeshRenderer>();
+        if (r == null) return;
+        const float targetHeight = 0.65f;
+        var b = r.bounds;
+        if (b.size.y < 0.01f || Mathf.Abs(b.size.y - targetHeight) < 0.05f) return;
+        float f = targetHeight / b.size.y;
+        var t = c.transform;
+        var ls = t.localScale;
+        t.localScale = new Vector3(ls.x, ls.y * f, ls.z);
+        // scaling happens about the pivot; shift so the old bottom edge is preserved
+        float pivotY = t.position.y;
+        float newBottom = pivotY - (pivotY - b.min.y) * f;
+        t.position += Vector3.up * (b.min.y - newBottom);
+    }
+
     private static void AddGatePosts(Corridor c)
     {
         var r = c.GetComponent<MeshRenderer>();
@@ -132,11 +155,22 @@ public static class VisualOverhaul
         foreach (var side in new[] { -1f, 1f })
         {
             string name = side < 0 ? "GatePost_L" : "GatePost_R";
-            if (c.transform.Find(name) != null) continue;
-            var post = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            post.name = name;
-            Object.DestroyImmediate(post.GetComponent<Collider>()); // decorative only
-            post.transform.SetParent(c.transform, false);
+            // Update-in-place, never destroy+recreate: in Level1.prefab the corridors are
+            // NESTED Corridor1 instances, and destroying a child inherited from the nested
+            // prefab throws InvalidOperationException and aborts the whole pass (hit
+            // 2026-07-21 18:06). Post size derives from panel bounds, which the
+            // short-and-wide squash changes, so existing posts must be re-fit, not skipped.
+            var existing = c.transform.Find(name);
+            GameObject post;
+            if (existing == null)
+            {
+                post = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                post.name = name;
+                Object.DestroyImmediate(post.GetComponent<Collider>()); // decorative only
+                post.transform.SetParent(c.transform, false);
+            }
+            else post = existing.gameObject;
+
             var worldEdge = new Vector3(b.center.x + side * b.extents.x, b.center.y, b.center.z);
             var local = c.transform.InverseTransformPoint(worldEdge);
             float postWorldHeight = b.size.y * 1.35f;
@@ -146,6 +180,7 @@ public static class VisualOverhaul
             // cylinder primitive is 2 units tall at scale 1
             post.transform.localScale = new Vector3(0.22f / lossyX, postWorldHeight * 0.5f / lossyY, 0.22f / lossyX);
             post.GetComponent<MeshRenderer>().sharedMaterial = postMat;
+            EditorUtility.SetDirty(post);
         }
     }
 
@@ -306,23 +341,21 @@ public static class VisualOverhaul
         // skybox shader (guaranteed to build on mobile) tuned toward a soft, airy, almost-flat
         // gradient rather than a saturated "vivid sky" — the top viral crowd-runners read as
         // bright and toy-like, not scenic.
+        // Custom two-color gradient shader (HOD directive 2026-07-21): Skybox/Procedural
+        // filters any tint through atmosphere scattering — at 0.35 thickness the spec blue
+        // washed to white, at 1.0 it rendered teal. The gradient shader draws #1E7FE0 ->
+        // #7FC4FF exactly as authored, no scattering model in the way.
+        var gradient = Shader.Find("Skybox/BvORGradient");
         var sky = AssetDatabase.LoadAssetAtPath<Material>($"{MatDir}/Mat_Sky.mat");
-        var proc = Shader.Find("Skybox/Procedural");
-        if (sky == null || sky.shader != proc)
+        if (sky == null || sky.shader != gradient)
         {
             AssetDatabase.DeleteAsset($"{MatDir}/Mat_Sky.mat");
-            sky = new Material(proc);
+            sky = new Material(gradient);
             AssetDatabase.CreateAsset(sky, $"{MatDir}/Mat_Sky.mat");
         }
-        // Corrected sky (#1E7FE0 -> #7FC4FF, lesson #5): AtmosphereThickness 0.35 washed the
-        // tint out to near-white in the actual capture regardless of _SkyTint — the procedural
-        // shader needs enough scattering for the tint to render at all. Verified against
-        // pixels, not the inspector swatch.
-        sky.SetColor("_SkyTint", BrandPalette.SkyTop);
-        sky.SetColor("_GroundColor", BrandPalette.SkyHorizon);
-        sky.SetFloat("_AtmosphereThickness", 1.0f);
-        sky.SetFloat("_SunSize", 0.01f);
-        sky.SetFloat("_Exposure", 1.15f);
+        sky.SetColor("_TopColor", BrandPalette.SkyTop);
+        sky.SetColor("_HorizonColor", BrandPalette.SkyHorizon);
+        sky.SetFloat("_Exponent", 1.4f);
         EditorUtility.SetDirty(sky);
         RenderSettings.skybox = sky;
 
@@ -409,7 +442,10 @@ public static class VisualOverhaul
     private static void AddTrackChevrons()
     {
         var parent = RebuildRoot("TrackChevrons");
-        var chevMat = FlatMat("Mat_Chevron", new Color(0.78f, 0.81f, 0.89f, 1f)); // #C7CFE3-ish
+        // #A8B4D6 (HOD directive): the first #C7CFE3 was near-zero contrast on the #EDEFF4
+        // track — if the viewer can't consciously see the chevrons they aren't doing their
+        // speed-read job.
+        var chevMat = FlatMat("Mat_Chevron", new Color(0.659f, 0.706f, 0.839f, 1f));
         for (float z = 12f; z <= 92f; z += 8f)
         {
             // arms meet at the apex (TrackCenterX, z+0.5); each arm sweeps back and outward

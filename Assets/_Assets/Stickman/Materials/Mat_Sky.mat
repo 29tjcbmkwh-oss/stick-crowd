@@ -8,9 +8,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Mat_Sky
-  m_Shader: {fileID: 106, guid: 0000000000000000f000000000000000, type: 0}
-  m_ValidKeywords:
-  - _SUNDISK_HIGH_QUALITY
+  m_Shader: {fileID: 4800000, guid: 3c4cca6ee318f445e9a59763411a7362, type: 3}
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -23,12 +22,8 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AtmosphereThickness: 1
-    - _Exposure: 1.15
-    - _SunDisk: 2
-    - _SunSize: 0.01
-    - _SunSizeConvergence: 5
+    - _Exponent: 1.4
     m_Colors:
-    - _GroundColor: {r: 0.498, g: 0.7686, b: 1, a: 1}
-    - _SkyTint: {r: 0.1176, g: 0.498, b: 0.8784, a: 1}
+    - _HorizonColor: {r: 0.498, g: 0.7686, b: 1, a: 1}
+    - _TopColor: {r: 0.1176, g: 0.498, b: 0.8784, a: 1}
   m_BuildTextureStacks: []
