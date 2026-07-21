@@ -201,12 +201,13 @@ public static class ThemeSetup
 
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontStyle = FontStyles.Bold;
-        // Dark navy fill + white outline: white-on-bright-gate was unreadable in every capture.
-        tmp.color = new Color(BrandPalette.SurfaceDark.r, BrandPalette.SurfaceDark.g,
-                              BrandPalette.SurfaceDark.b, 1f);
+        // Near-black fill + thick white outline (was SurfaceDark navy + 0.18 outline, which
+        // read tone-on-tone against the colored glass at distance — "readable close, muddy
+        // far" in the 18:07 captures; Ali flagged labels as still not fixed).
+        tmp.color = new Color(0.03f, 0.04f, 0.08f, 1f);
         if (tmp.fontSharedMaterial != null)
         {
-            tmp.outlineWidth = 0.18f;
+            tmp.outlineWidth = 0.28f;
             tmp.outlineColor = Color.white;
         }
 

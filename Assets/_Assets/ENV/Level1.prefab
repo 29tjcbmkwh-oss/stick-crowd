@@ -622,7 +622,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.059, g: 0.078, b: 0.125, a: 1}
+  m_fontColor: {r: 0.03, g: 0.04, b: 0.08, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -890,7 +890,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.059, g: 0.078, b: 0.125, a: 1}
+  m_fontColor: {r: 0.03, g: 0.04, b: 0.08, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1407,7 +1407,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.059, g: 0.078, b: 0.125, a: 1}
+  m_fontColor: {r: 0.03, g: 0.04, b: 0.08, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1758,7 +1758,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 0.059, g: 0.078, b: 0.125, a: 1}
+  m_fontColor: {r: 0.03, g: 0.04, b: 0.08, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1948,7 +1948,7 @@ PrefabInstance:
     - target: {fileID: 788168563627971895, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1462556908918020380, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -2052,7 +2052,7 @@ PrefabInstance:
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_enableWordWrapping
       value: 0
@@ -2132,7 +2132,7 @@ PrefabInstance:
     - target: {fileID: 788168563627971895, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1462556908918020380, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -2240,7 +2240,7 @@ PrefabInstance:
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_enableWordWrapping
       value: 0
@@ -2320,7 +2320,7 @@ PrefabInstance:
     - target: {fileID: 788168563627971895, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1462556908918020380, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -2424,7 +2424,7 @@ PrefabInstance:
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_enableWordWrapping
       value: 0
@@ -2504,7 +2504,7 @@ PrefabInstance:
     - target: {fileID: 788168563627971895, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1462556908918020380, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -2604,7 +2604,7 @@ PrefabInstance:
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 4531580003392639606, guid: d898d5a6f76054c33be3208df0cce50f, type: 3}
       propertyPath: m_enableWordWrapping
       value: 0

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using _Scripts.Core;
 using _Scripts.Models;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -20,6 +21,16 @@ namespace _Scripts.Controllers
             private readonly List<GameObject> _spawnedUnits = new List<GameObject>();
             private List<Vector3> _points = new List<Vector3>();
             private Transform _parent;
+
+            // Per-unit move-speed multiplier (±~18%) so the crowd doesn't slide into grid
+            // slots at one mechanical uniform speed — same "small independent variance per
+            // unit" pattern Cat.RandomizeIdle() already established.
+            private readonly Dictionary<GameObject, float> _unitSpeed = new Dictionary<GameObject, float>();
+
+            // Set whenever a unit starts its death beat. Read by the editor-side
+            // GameplayCapture to snap a screenshot mid-fall so the loss moment is verifiable
+            // in pixels, not just in code review.
+            public static double LastKillRealtime;
             
             public GameObject boss;
        
@@ -125,7 +136,8 @@ namespace _Scripts.Controllers
                     Kill(_spawnedUnits.Count - _points.Count);
                 }
                 for (var i = 0; i < _spawnedUnits.Count; i++) {
-                    _spawnedUnits[i].transform.position = Vector3.MoveTowards(_spawnedUnits[i].transform.position, transform.position + _points[i], 3F * Time.deltaTime);
+                    float speed = _unitSpeed.TryGetValue(_spawnedUnits[i], out var s) ? s : 3F;
+                    _spawnedUnits[i].transform.position = Vector3.MoveTowards(_spawnedUnits[i].transform.position, transform.position + _points[i], speed * Time.deltaTime);
                 }
             }
         
@@ -143,28 +155,64 @@ namespace _Scripts.Controllers
                 go.transform.SetParent(_parent);
                 go.transform.SetPositionAndRotation(transform.position + position, Quaternion.identity);
                 _spawnedUnits.Add(go);
+                _unitSpeed[go] = UnityEngine.Random.Range(2.5F, 3.6F);
             }
 
             public void KillGameObject(GameObject go)
             {
                 _spawnedUnits.Remove(go);
-                Destroy(go);
+                _unitSpeed.Remove(go);
+                PlayDeathBeat(go);
             }
+
+            // Kill() removes _spawnedUnits.First() — BoxFormation yields its z=0 row first,
+            // which after centering is the most-NEGATIVE-z row, i.e. the REAR rank of a crowd
+            // running toward +z. So the trailing edge visibly loses members, which is the
+            // correct read (confirmed by reading the yield order, per the HOD dispatch ask).
             private void Kill(int num) {
                 for (int i = 0; i < num; i++) {
-                    // GameObject unit = _spawnedUnits.LastOrDefault();
                     GameObject unit = _spawnedUnits.First();
                     _spawnedUnits.Remove(unit);
+                    _unitSpeed.Remove(unit);
+                    PlayDeathBeat(unit);
+                }
+            }
+
+            // A lost unit used to vanish in a single frame (Destroy/Release straight from
+            // Kill) — the count changed but losing crowd FELT like nothing, which was Ali's
+            // core 5/10 complaint. No death clip exists in the rig's Animator (only
+            // startRunning/stopRunning are wired), so this is a code-only exit beat:
+            // knock the unit up-and-backward, tumble, shrink, THEN destroy/release.
+            private void PlayDeathBeat(GameObject unit)
+            {
+                LastKillRealtime = Time.realtimeSinceStartupAsDouble;
+
+                unit.transform.SetParent(null);
+                foreach (var col in unit.GetComponentsInChildren<Collider>())
+                    col.enabled = false; // must not re-trigger gates/obstacles while falling
+                var rb = unit.GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = true; // physics would fight the tween
+
+                Vector3 knock = new Vector3(UnityEngine.Random.Range(-0.5F, 0.5F), 0.3F, -1.2F);
+                Vector3 originalScale = unit.transform.localScale;
+                var seq = DOTween.Sequence();
+                seq.Join(unit.transform.DOMove(unit.transform.position + knock, 0.45F).SetEase(Ease.OutQuad));
+                seq.Join(unit.transform.DOLocalRotate(new Vector3(-75F, UnityEngine.Random.Range(-50F, 50F), 0F), 0.45F, RotateMode.LocalAxisAdd));
+                seq.Join(unit.transform.DOScale(originalScale * 0.05F, 0.45F).SetEase(Ease.InQuad));
+                seq.OnComplete(() =>
+                {
                     if (usePool)
                     {
+                        // pool reuse must not inherit death-beat mutations
+                        unit.transform.localScale = originalScale;
+                        unit.transform.rotation = Quaternion.identity;
+                        foreach (var col in unit.GetComponentsInChildren<Collider>())
+                            col.enabled = true;
+                        if (rb != null) rb.isKinematic = false;
                         _pool.Release(unit);
                     }
-                    else
-                    {
-                        Destroy(unit);
-                    }
-
-                }
+                    else Destroy(unit);
+                });
             }
     }
 }

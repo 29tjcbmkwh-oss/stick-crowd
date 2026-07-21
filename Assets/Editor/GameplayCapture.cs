@@ -19,6 +19,10 @@ public static class GameplayCapture
     // unverified. Mid catches the track past the first gates; end catches boss/outcome.
     public const string OutputPathMid = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-mid.png";
     public const string OutputPathEnd = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-end.png";
+    // Event-triggered, not time-triggered: fires ~0.2s after ArmyController starts a death
+    // beat, so the shot lands mid-fall — the only reliable way to catch a ~0.45s exit
+    // animation in a screenshot.
+    public const string OutputPathLoss = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-loss.png";
 
     private enum State { Idle, RequestedPlay, WaitingInPlayMode, Captured }
 
@@ -69,6 +73,12 @@ public static class GameplayCapture
 
     private const string Shot1Key = "GameplayCapture_Shot1";
     private const string Shot2Key = "GameplayCapture_Shot2";
+    private const string LossShotKey = "GameplayCapture_LossShot";
+    private static bool LossShotDone
+    {
+        get => SessionState.GetBool(LossShotKey, false);
+        set => SessionState.SetBool(LossShotKey, value);
+    }
     private static bool Shot1Done
     {
         get => SessionState.GetBool(Shot1Key, false);
@@ -136,6 +146,18 @@ public static class GameplayCapture
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath) !);
+
+            // loss moment: snap ~0.2s into a death beat so falling units are mid-tween
+            double lastKill = _Scripts.Controllers.ArmyController.LastKillRealtime;
+            if (!LossShotDone && lastKill > 0 &&
+                Time.realtimeSinceStartupAsDouble - lastKill >= 0.2 &&
+                Time.realtimeSinceStartupAsDouble - lastKill <= 0.4)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPathLoss);
+                LossShotDone = true;
+                Debug.Log($"[GameplayCapture] loss-moment shot requested at {OutputPathLoss}");
+            }
+
             if (!Shot1Done && elapsed >= SecondsToWaitBeforeCapture)
             {
                 ScreenCapture.CaptureScreenshot(OutputPath);
@@ -165,6 +187,7 @@ public static class GameplayCapture
             EditorApplication.isPlaying = false;
             Shot1Done = false;
             Shot2Done = false;
+            LossShotDone = false;
             CurrentState = State.Idle;
         }
     }
