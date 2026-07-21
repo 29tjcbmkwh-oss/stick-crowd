@@ -43,12 +43,47 @@ namespace _Scripts.Core
             levelText.text = "LEVEL " + (PlayerPrefs.GetInt("level", 0) + 1);
             PolishHud();
 
-            var canvas = GetComponentInParent<Canvas>();
+            // UIManager sits on the Managers object, NOT under the Canvas — a plain
+            // GetComponentInParent<Canvas>() here has been silently null the whole time
+            // (leaderboard/store buttons never appeared). startButton is a serialized scene
+            // reference that definitely lives under the real screen-space canvas.
+            var canvas = startButton != null ? startButton.GetComponentInParent<Canvas>() : GetComponentInParent<Canvas>();
             if (canvas != null)
             {
                 leaderboardPanel = LeaderboardPanel.Build(canvas.transform);
                 BuildLeaderboardButton(canvas);
+                BuildSkinStoreButton(canvas);
             }
+        }
+
+        private GameObject _skinStoreButton;
+
+        // Start-screen entry to the Group B skin store — same code-built pattern as the
+        // leaderboard button.
+        private void BuildSkinStoreButton(Canvas canvas)
+        {
+            _skinStoreButton = new GameObject("SkinStoreButton", typeof(RectTransform));
+            _skinStoreButton.transform.SetParent(canvas.transform, false);
+            var img = _skinStoreButton.AddComponent<Image>();
+            img.color = new Color(0.2314f, 0.4863f, 1f, 1f);
+            if (coinSprite != null) { img.sprite = coinSprite; img.type = Image.Type.Sliced; }
+            var rt = (RectTransform)_skinStoreButton.transform;
+            rt.anchorMin = new Vector2(0f, 1f); rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(30f, -170f);
+            rt.sizeDelta = new Vector2(260f, 90f);
+            var btn = _skinStoreButton.AddComponent<Button>();
+            btn.onClick.AddListener(() => SkinStorePanel.Toggle(canvas.transform));
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(_skinStoreButton.transform, false);
+            var label = labelGo.AddComponent<TextMeshProUGUI>();
+            label.text = "SKINS";
+            label.fontSize = 36; label.fontStyle = FontStyles.Bold;
+            label.alignment = TextAlignmentOptions.Center; label.color = Color.white;
+            label.raycastTarget = false;
+            var lrt = (RectTransform)labelGo.transform;
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
         }
 
         // Restyles the always-visible score/level/progress HUD to the Blue vs Orange
@@ -117,6 +152,8 @@ namespace _Scripts.Core
         private void GameFlowManagerOnGameStateChange(GameState obj)
         {
             startButton.SetActive(obj == GameState.Start);
+            if (_skinStoreButton != null) _skinStoreButton.SetActive(obj == GameState.Start);
+            if (obj != GameState.Start) SkinStorePanel.Close();
 
             startButtonBack.SetActive(obj == GameState.Start);
             

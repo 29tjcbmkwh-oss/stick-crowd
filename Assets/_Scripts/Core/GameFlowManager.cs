@@ -67,8 +67,14 @@ namespace _Scripts.Core
             ResetReviveAttempt();
             PauseGameFlow();
             ScoreManager.Instance.EnsureRunReward();
-            UIManager.Instance.ActivatePopup(UIManager.Instance.gameWinPanel);
             AudioManager.Instance.PlayOneShot(AudioManager.Instance.gameWinSound);
+            // Reward-choice boxes first (Group B), win panel after the player continues.
+            var canvas = UIManager.Instance.startButton != null ? UIManager.Instance.startButton.GetComponentInParent<Canvas>() : null;
+            if (canvas != null)
+                RewardChoicePanel.Show(canvas.transform,
+                    () => UIManager.Instance.ActivatePopup(UIManager.Instance.gameWinPanel));
+            else
+                UIManager.Instance.ActivatePopup(UIManager.Instance.gameWinPanel);
         }
 
         public void RestartGame()

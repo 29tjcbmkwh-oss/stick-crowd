@@ -71,7 +71,7 @@ public static class GameplayCapture
     // starts the run. Fix: after the splash clears, programmatically force the run to start
     // (GameFlowManager.UpdateGameState(GameState.Game)) exactly once, then give the crowd a few
     // seconds to spawn and move down the track before shooting. Timeline below.
-    private const double SecondsBeforeStartingRun = 3.0; // let the ~2.3s splash fully clear first
+    private const double SecondsBeforeStartingRun = 4.2; // splash clears ~2.5s; leaves a window to shoot the skin store first
     private const double SecondsToWaitBeforeCapture = 8.0; // 5s of live gameplay after run start
     private const double SecondsForMidCapture = 18.0;      // past the first gates
     private const double SecondsForEndCapture = 32.0;      // boss arena approach
@@ -105,6 +105,21 @@ public static class GameplayCapture
         get => SessionState.GetFloat(BattleTimeKey, 0f);
         set => SessionState.SetFloat(BattleTimeKey, (float)value);
     }
+    public const string OutputPathStore = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-store.png";
+    public const string OutputPathReward = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward.png";
+    public const string OutputPathRewardReveal = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward-reveal.png";
+    private const string StoreShotKey = "GameplayCapture_StoreShot";
+    private static bool StoreShotDone
+    {
+        get => SessionState.GetBool(StoreShotKey, false);
+        set => SessionState.SetBool(StoreShotKey, value);
+    }
+    private const string WinStepKey = "GameplayCapture_WinStep";
+    private static int WinStep
+    {
+        get => SessionState.GetInt(WinStepKey, 0);
+        set => SessionState.SetInt(WinStepKey, value);
+    }
     private const string BattleShotKey = "GameplayCapture_BattleShot";
     private static bool BattleShotDone
     {
@@ -122,6 +137,20 @@ public static class GameplayCapture
         set => SessionState.SetBool(Shot2Key, value);
     }
 
+    private static void ClickButtonWithLabel(string label)
+    {
+        foreach (var b in UnityEngine.Object.FindObjectsOfType<UnityEngine.UI.Button>())
+        {
+            var t = b.GetComponentInChildren<TMPro.TMP_Text>();
+            if (t != null && t.text == label && b.interactable)
+            {
+                b.onClick.Invoke();
+                return;
+            }
+        }
+        Debug.LogWarning($"[GameplayCapture] no clickable button labeled '{label}' found");
+    }
+
     static GameplayCapture()
     {
         EditorApplication.update += Tick;
@@ -131,6 +160,10 @@ public static class GameplayCapture
     {
         if (CurrentState == State.Idle)
         {
+            // Never enter Play Mode with a compile pending: the play session would run the
+            // OLD assemblies while the reload waits, silently testing stale code (bit us
+            // repeatedly on 2026-07-21 — passes/plays that raced the reload).
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             if (!File.Exists(Marker)) return;
             File.Delete(Marker);
             Debug.Log("[GameplayCapture] marker found — entering Play Mode on Level.unity to capture a screenshot");
@@ -160,6 +193,32 @@ public static class GameplayCapture
             }
 
             double elapsed = EditorApplication.timeSinceStartup - PlayModeStartTime;
+
+            // Group B store verification: open the skin store on the start screen, shoot it,
+            // close it, all before the run gets forced below.
+            if (!StoreShotDone && elapsed >= 2.7 && elapsed < SecondsBeforeStartingRun && !RunStarted)
+            {
+                var uim = UnityEngine.Object.FindObjectOfType<_Scripts.Core.UIManager>();
+                // startButton anchors the real screen canvas; UIManager itself sits on the
+                // Managers object outside the canvas (same trap as UIManager.Start had)
+                var canvas = uim != null && uim.startButton != null
+                    ? uim.startButton.GetComponentInParent<Canvas>() : null;
+                if (canvas != null && !_Scripts.Core.SkinStorePanel.IsOpen)
+                    _Scripts.Core.SkinStorePanel.Open(canvas.transform);
+                if (elapsed >= 3.6 && _Scripts.Core.SkinStorePanel.IsOpen)
+                {
+                    ScreenCapture.CaptureScreenshot(OutputPathStore);
+                    StoreShotDone = true;
+                    Debug.Log($"[GameplayCapture] skin store shot requested at {OutputPathStore}");
+                    // Close on a LATER tick: CaptureScreenshot grabs at END of frame, and a
+                    // same-frame Close() destroyed the panel before the grab (22:38 shot
+                    // showed the start screen instead of the store).
+                }
+            }
+            if (StoreShotDone && elapsed >= 3.95 && _Scripts.Core.SkinStorePanel.IsOpen)
+            {
+                _Scripts.Core.SkinStorePanel.Close();
+            }
 
             // Once the splash has cleared, force the run to start (nothing else will) so the
             // capture lands on actual crowd gameplay instead of the Start screen.
@@ -232,7 +291,31 @@ public static class GameplayCapture
             if (GameFlowManager.Instance != null && GameFlowManager.Instance.state == GameState.Win)
             {
                 if (WinTime <= 0) WinTime = EditorApplication.timeSinceStartup;
-                if (EditorApplication.timeSinceStartup - WinTime >= 0.7) // coins still mid-fountain
+                double sinceWin = EditorApplication.timeSinceStartup - WinTime;
+                // Group B verification sequence: reward boxes -> pick -> reveal -> continue -> win panel
+                if (WinStep == 0 && sinceWin >= 0.8)
+                {
+                    ScreenCapture.CaptureScreenshot(OutputPathReward);
+                    Debug.Log("[GameplayCapture] reward-boxes shot requested");
+                    WinStep = 1;
+                }
+                else if (WinStep == 1 && sinceWin >= 1.4)
+                {
+                    ClickButtonWithLabel("?");
+                    WinStep = 2;
+                }
+                else if (WinStep == 2 && sinceWin >= 2.4)
+                {
+                    ScreenCapture.CaptureScreenshot(OutputPathRewardReveal);
+                    Debug.Log("[GameplayCapture] reward-reveal shot requested");
+                    WinStep = 3;
+                }
+                else if (WinStep == 3 && sinceWin >= 3.0)
+                {
+                    ClickButtonWithLabel("CONTINUE");
+                    WinStep = 4;
+                }
+                else if (WinStep == 4 && sinceWin >= 4.0)
                 {
                     ScreenCapture.CaptureScreenshot(OutputPathWin);
                     Debug.Log($"[GameplayCapture] win-screen shot requested at {OutputPathWin} — SUCCESS");
@@ -263,8 +346,10 @@ public static class GameplayCapture
             Shot3Done = false;
             LossShotDone = false;
             BattleShotDone = false;
+            StoreShotDone = false;
             BattleTime = 0;
             WinTime = 0;
+            WinStep = 0;
             CurrentState = State.Idle;
         }
     }

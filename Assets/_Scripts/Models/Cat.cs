@@ -15,6 +15,7 @@ namespace _Scripts.Models
             // InChildren: the stickman rig (with its Animator) is a child of the crowd-unit root.
             // Also finds an Animator on the root itself, so old prefabs keep working.
             _catAnimator = GetComponentInChildren<Animator>();
+            SkinSystem.ApplyTo(gameObject); // equipped store skin (no-op for the default)
             RandomizeIdle();
             if (GameFlowManager.Instance.state == GameState.Start)
             {

@@ -43,8 +43,10 @@ public class ScoreManager : Singleton<ScoreManager>
     {
         int corridorScore = CorridorController.Instance != null ? CorridorController.Instance.score : 0;
         int total = Mathf.Max(1, corridorScore + Mathf.RoundToInt(CalculateLevelEndBonus(boss)));
-        // "EARNED +N" phrasing per the Count Master reference win screen (HOD dispatch)
-        if (endGameScoreText != null) endGameScoreText.text = $"EARNED +{total}";
+        // "EARNED +N" phrasing per the Count Master reference win screen (HOD dispatch).
+        // Display must include the flat +100 completion bonus the grant adds, or the text
+        // undersells what the player actually received (showed +60 while granting +160).
+        if (endGameScoreText != null) endGameScoreText.text = $"EARNED +{total + 100}";
         GrantRunReward(total);
     }
 
@@ -96,5 +98,19 @@ public class ScoreManager : Singleton<ScoreManager>
         PlayerPrefs.SetInt(CoinsKey, newBalance);
         PlayerPrefs.Save();
         CoinsChanged?.Invoke(newBalance);
+    }
+
+    /// <summary>Positive-only coin grant for the reward-choice boxes (Group B).</summary>
+    public void GrantBonusCoins(int amount) => AddCoins(amount);
+
+    /// <summary>Spend coins if affordable; false (and no change) otherwise. Skin store.</summary>
+    public bool TrySpend(int cost)
+    {
+        if (cost < 0 || Coins < cost) return false;
+        int newBalance = Coins - cost;
+        PlayerPrefs.SetInt(CoinsKey, newBalance);
+        PlayerPrefs.Save();
+        CoinsChanged?.Invoke(newBalance);
+        return true;
     }
 }

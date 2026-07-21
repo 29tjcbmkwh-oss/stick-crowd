@@ -55,6 +55,18 @@ namespace _Scripts.Controllers
             /// If you will have 20 you should set it to 20
             /// </summary>
             /// 
+            private ObjectPool<GameObject> Pool
+            {
+                get
+                {
+                    // Lazy: Spawn() can run from Update before this component's Start on
+                    // scene-lifecycle edges (caught as an NRE storm at 22:2x) — never trust
+                    // Start-vs-Update ordering for a runtime-constructed field.
+                    if (_pool == null) CreateObjectPool();
+                    return _pool;
+                }
+            }
+
             private void CreateObjectPool()
             {
                 _pool = new ObjectPool<GameObject>(() => CreateCatUnit().gameObject, 
@@ -149,7 +161,7 @@ namespace _Scripts.Controllers
                 
                 foreach (Vector3 pos in points)
                 {
-                     GameObject unit = usePool ?  _pool.Get(): Instantiate(_catUnit.gameObject);
+                     GameObject unit = usePool ?  Pool.Get(): Instantiate(_catUnit.gameObject);
                      SetUnitTransform(unit,pos);
                 }
             }
@@ -213,7 +225,7 @@ namespace _Scripts.Controllers
                         foreach (var col in unit.GetComponentsInChildren<Collider>())
                             col.enabled = true;
                         if (rb != null) rb.isKinematic = false;
-                        _pool.Release(unit);
+                        Pool.Release(unit);
                     }
                     else Destroy(unit);
                 });
