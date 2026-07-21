@@ -70,7 +70,11 @@ public static class VisualOverhaul
     {
         int count = 0;
 
-        // 1) glow on the gate slabs
+        // 1) glow on the gate slabs — MUST match ThemeSetup's corrected value, not override it.
+        // This pass used to re-set emission to 0.55x after ThemeSetup had set 0.22x, silently
+        // re-bleaching the gate hues whenever the two passes ran in sequence (the exact
+        // emission/alpha stacking failure from the 2026-07-20 overnight lessons). Single
+        // source of truth is ThemeSetup.GateEmission now.
         foreach (var corridor in root.GetComponentsInChildren<Corridor>(true))
         {
             var positive = corridor.GetCorridorType() is Constants.CorridorTypes.Increase
@@ -81,62 +85,35 @@ public static class VisualOverhaul
                 {
                     if (mat == null) continue;
                     mat.EnableKeyword("_EMISSION");
-                    // Stronger glow than before (0.35 -> 0.55) so the choice reads at a
-                    // glance from a distance, not just once the label text is legible.
-                    mat.SetColor("_EmissionColor", (positive ? GateBlue : GateOrange) * 0.55f);
+                    mat.SetColor("_EmissionColor",
+                        (positive ? GateBlue : GateOrange) * ThemeSetup.GateEmission);
                     EditorUtility.SetDirty(mat);
                 }
             }
             count++;
         }
 
-        // 2) big readable numbers on a plate, standing up and facing the camera
+        // 2) gate numbers: defer entirely to ThemeSetup's single authoritative label style
+        // (flush on the panel, autosized inside a panel-clamped rect). This pass previously
+        // applied its own competing billboard style, and whichever pass ran last won — the
+        // root cause of the giant overlapping label smear in the 12:16 capture.
         foreach (var label in root.GetComponentsInChildren<TextMeshPro>(true))
         {
             if (label.gameObject.name != "GateLabel") continue;
             var corridor = label.GetComponentInParent<Corridor>();
             if (corridor == null) continue;
 
-            label.text = GateText(corridor);
-            label.fontSize = 4.6f;                    // slightly bigger (4.2 -> 4.6) with the glyph added
-            label.fontStyle = FontStyles.Bold;
-            label.alignment = TextAlignmentOptions.Center;
-            label.color = Color.white;
-            label.outlineWidth = 0.3f;                // thick dark outline = readable on any gate
-            label.outlineColor = new Color32(6, 8, 14, 255);
-            label.enableWordWrapping = false;
+            label.text = ThemeSetup.GateLabelText(corridor);
+            ThemeSetup.StyleGateLabel(label, corridor);
 
-            if (label.gameObject.GetComponent<GatePulse>() == null)
-                label.gameObject.AddComponent<GatePulse>();
-
-            var t = label.transform;
-            t.localPosition = new Vector3(0f, 0.45f, 0f);   // sit low on the gate slab
-            t.localRotation = Quaternion.identity;          // Billboard handles facing
-            t.localScale = Vector3.one;
-            var rt = label.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(3.2f, 1.4f);
-
-            if (label.GetComponent<_Scripts.Core.Billboard>() == null)
-                label.gameObject.AddComponent<_Scripts.Core.Billboard>();
-
-            // remove the backing plate from the earlier attempt (it culls/renders wrong once billboarded)
+            // remove the backing plate from the earlier attempt
             var oldPlate = label.transform.Find("Plate");
             if (oldPlate != null) Object.DestroyImmediate(oldPlate.gameObject);
+            EditorUtility.SetDirty(label);
         }
 
         return count;
     }
-
-    // Leading glyph makes the choice readable before the number is — a distant blue gate
-    // reads "up/good" and a distant orange gate reads "down/danger" from shape alone.
-    private static string GateText(Corridor c) => c.GetCorridorType() switch
-    {
-        Constants.CorridorTypes.Increase => $"▲+{c.increaseAmount}",
-        Constants.CorridorTypes.Decrease => $"▼-{c.decreaseAmount}",
-        Constants.CorridorTypes.Multiply => $"▲x{c.multiplyAmount}",
-        Constants.CorridorTypes.Divide   => $"▼÷{c.divideAmount}",
-        _ => "?"
-    };
 
     private static void OverhaulScene(Material plate)
     {
@@ -155,11 +132,15 @@ public static class VisualOverhaul
             sky = new Material(proc);
             AssetDatabase.CreateAsset(sky, $"{MatDir}/Mat_Sky.mat");
         }
-        sky.SetColor("_SkyTint", BrandPalette.SkyTop);         // #DFF1FF, pale blue
-        sky.SetColor("_GroundColor", BrandPalette.SkyHorizon); // #FFFFFF, white horizon
-        sky.SetFloat("_AtmosphereThickness", 0.35f);           // thinner = softer gradient, less "sky drama"
+        // Corrected sky (#1E7FE0 -> #7FC4FF, lesson #5): AtmosphereThickness 0.35 washed the
+        // tint out to near-white in the actual capture regardless of _SkyTint — the procedural
+        // shader needs enough scattering for the tint to render at all. Verified against
+        // pixels, not the inspector swatch.
+        sky.SetColor("_SkyTint", BrandPalette.SkyTop);
+        sky.SetColor("_GroundColor", BrandPalette.SkyHorizon);
+        sky.SetFloat("_AtmosphereThickness", 1.0f);
         sky.SetFloat("_SunSize", 0.01f);
-        sky.SetFloat("_Exposure", 1.25f);
+        sky.SetFloat("_Exposure", 1.15f);
         EditorUtility.SetDirty(sky);
         RenderSettings.skybox = sky;
 

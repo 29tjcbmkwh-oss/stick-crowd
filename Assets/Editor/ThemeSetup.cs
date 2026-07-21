@@ -91,7 +91,7 @@ public static class ThemeSetup
         // glow — the game is literally named after these two colours.
         // Now: emission is a subtle lift (0.22x) that survives bloom without bleaching the hue,
         // and saturation comes from the raised alpha in BrandPalette instead.
-        Color glow = new Color(c.r, c.g, c.b) * 0.22f;
+        Color glow = new Color(c.r, c.g, c.b) * GateEmission;
         m.EnableKeyword("_EMISSION");
         m.SetColor("_EmissionColor", glow);
         m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
@@ -130,49 +130,98 @@ public static class ThemeSetup
         return touched;
     }
 
+    // Gate emission multiplier — single source shared with VisualOverhaul. 0.22x is the
+    // corrected value from 2026-07-20 (1.35x, then 0.55x, both bleached the brand hues toward
+    // white over a bright environment; see the Transparent() comment below).
+    public const float GateEmission = 0.22f;
+
+    public static string GateLabelText(Corridor c) => c.GetCorridorType() switch
+    {
+        Constants.CorridorTypes.Increase => $"+{c.increaseAmount}",
+        Constants.CorridorTypes.Decrease => $"-{c.decreaseAmount}",
+        Constants.CorridorTypes.Multiply => $"x{c.multiplyAmount}",
+        Constants.CorridorTypes.Divide   => $"÷{c.divideAmount}",
+        _ => "?"
+    };
+
     private static void EnsureGateLabel(Corridor c)
     {
         const string labelName = "GateLabel";
-        string text = c.GetCorridorType() switch
-        {
-            Constants.CorridorTypes.Increase => $"+{c.increaseAmount}",
-            Constants.CorridorTypes.Decrease => $"-{c.decreaseAmount}",
-            Constants.CorridorTypes.Multiply => $"x{c.multiplyAmount}",
-            Constants.CorridorTypes.Divide   => $"÷{c.divideAmount}",
-            _ => "?"
-        };
 
         // Scene corridors are prefab instances — children inherited from the prefab cannot be
         // destroyed there. Update an existing label in place; only create when absent.
         var existing = c.transform.Find(labelName);
+        TextMeshPro tmp;
         if (existing != null)
         {
-            var existingTmp = existing.GetComponent<TextMeshPro>();
-            if (existingTmp != null) { existingTmp.text = text; EditorUtility.SetDirty(existingTmp); }
-            return;
+            tmp = existing.GetComponent<TextMeshPro>();
+            if (tmp == null) return;
+        }
+        else
+        {
+            var go = new GameObject(labelName);
+            go.transform.SetParent(c.transform, false);
+            tmp = go.AddComponent<TextMeshPro>();
         }
 
-        var go = new GameObject(labelName);
-        go.transform.SetParent(c.transform, false);
-        var tmp = go.AddComponent<TextMeshPro>();
-        tmp.text = text;
-        tmp.fontSize = 24;
+        tmp.text = GateLabelText(c);
+        StyleGateLabel(tmp, c);
+        EditorUtility.SetDirty(tmp);
+    }
+
+    // The one authoritative gate-label style, applied to BOTH existing and newly-created
+    // labels (the old code only restyled new ones — existing scene labels kept whatever an
+    // earlier pass left, which is how the oversized overlapping white smear survived a "fixed"
+    // report), and called by VisualOverhaul too so the two passes can no longer fight.
+    //
+    // Flush-on-panel positioning (HOD 2026-07-21): sits against the panel's front face with a
+    // 0.03 z-offset only (z-fighting), rotating WITH the gate like paint on glass — which is
+    // why any Billboard component on the label must be removed, not kept: Billboard re-rotates
+    // the label off the panel every frame and was one of the two runtime underminers of the
+    // flush fix (the other was GatePulse resetting scale to 1 — fixed in GatePulse itself).
+    public static void StyleGateLabel(TextMeshPro tmp, Corridor c)
+    {
+        var go = tmp.gameObject;
+
+        var billboard = go.GetComponent<_Scripts.Core.Billboard>();
+        if (billboard != null) UnityEngine.Object.DestroyImmediate(billboard, true);
+        if (go.GetComponent<GatePulse>() == null) go.AddComponent<GatePulse>();
+
+        go.transform.localPosition = new Vector3(0f, 0f, 0.03f);
+        // Identity rotation, NOT the old Euler(0,180,0): that flip dated from the Billboard
+        // era when runtime facing was overridden every frame anyway. Once Billboard was
+        // removed the static 180° left the text facing away from the camera, rendering
+        // mirrored via TMP's double-sided shader (confirmed in the 16:45 capture — "+20"
+        // read as "0S+").
+        go.transform.localRotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one * 0.16f;
+
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontStyle = FontStyles.Bold;
-        tmp.color = Color.white;
-        tmp.outlineWidth = 0.2f;
-        tmp.outlineColor = Color.black;
-        // FIXED 2026-07-21 (HOD): this label used to float 0.6 units ABOVE the gate panel as a
-        // separate hovering sign, which read as "on top of" the gate, not part of it (owner
-        // feedback, directly comparing against reference footage where the number is printed ON
-        // the glass). Now sits nearly flush against the panel's own front face — a tiny forward
-        // offset (0.03) only to avoid z-fighting with the gate mesh, no vertical offset at all —
-        // so it reads as printed on the surface instead of a sign hovering over it.
-        go.transform.localPosition = new Vector3(0f, 0f, 0.03f);
-        go.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-        go.transform.localScale = Vector3.one * 0.16f; // slightly larger since it's now on-surface, not elevated
-        var rt = tmp.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(20, 8);
+        // Dark navy fill + white outline: white-on-bright-gate was unreadable in every capture.
+        tmp.color = new Color(BrandPalette.SurfaceDark.r, BrandPalette.SurfaceDark.g,
+                              BrandPalette.SurfaceDark.b, 1f);
+        if (tmp.fontSharedMaterial != null)
+        {
+            tmp.outlineWidth = 0.18f;
+            tmp.outlineColor = Color.white;
+        }
+
+        // Clamp the rect to the gate panel's own footprint and autosize the text inside it —
+        // a fixed fontSize with wrapping off overflows the rect freely, which is how two
+        // neighbouring labels smeared across each other's gates.
+        tmp.enableWordWrapping = false;
+        tmp.overflowMode = TextOverflowModes.Overflow;
+        var renderer = c.GetComponent<MeshRenderer>();
+        float panelW = renderer != null ? renderer.bounds.size.x : 3f;
+        float panelH = renderer != null ? Mathf.Max(0.6f, renderer.bounds.size.y) : 1.2f;
+        float lossyX = Mathf.Max(0.0001f, Mathf.Abs(go.transform.lossyScale.x));
+        float lossyY = Mathf.Max(0.0001f, Mathf.Abs(go.transform.lossyScale.y));
+        tmp.rectTransform.sizeDelta = new Vector2(panelW * 0.88f / lossyX,
+                                                  panelH * 0.70f / lossyY);
+        tmp.enableAutoSizing = true;
+        tmp.fontSizeMin = 1f;
+        tmp.fontSizeMax = 60f;
     }
 
     private static void ThemePrefab(string path, Material track, Material wall,
