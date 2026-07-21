@@ -482,7 +482,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74b79c6b37f84326bcccaca8a61238b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usePool: 0
+  usePool: 1
   _catUnit: {fileID: -6125665025104561649, guid: e7ae3c5c7da8c4dadbafbabb187578c4, type: 3}
   boss: {fileID: 0}
   startZ: 0

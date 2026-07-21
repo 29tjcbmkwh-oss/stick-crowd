@@ -376,14 +376,36 @@ public static class ThemeSetup
         if (rounded != null && uim.coinSprite != rounded)
         { uim.coinSprite = rounded; EditorUtility.SetDirty(uim); }
 
-        // panel backdrop: opaque dark navy
+        // Full-screen opaque dark navy backdrop (reference win screens are a full dark
+        // takeover, not a floating card) — also hides the world behind it: the tilted 3D
+        // scoreboard prop, bonus strip, and resting ball all read as clutter/skew through a
+        // partial panel (Ali flagged the "skewed card" in the 19:07/20:39 captures; the skew
+        // was world-geometry perspective bleeding through, not a UI rotation).
         var bg = panel.GetComponent<Image>();
-        if (bg != null)
+        if (bg == null) bg = panel.AddComponent<Image>(); // root had no Image — the "backdrop" was world geometry bleeding through
         {
             bg.color = new Color(BrandPalette.SurfaceDark.r, BrandPalette.SurfaceDark.g,
-                                 BrandPalette.SurfaceDark.b, 0.97f);
-            if (rounded != null) { bg.sprite = rounded; bg.type = Image.Type.Sliced; }
+                                 BrandPalette.SurfaceDark.b, 1f);
+            bg.sprite = null; // plain full-bleed quad, no rounded corners on a full-screen fill
+            // Plain full-stretch, NOT overscan: the canvas is screen-space, so stretch covers
+            // the screen exactly — the earlier ±4000 overscan dragged the panel's bottom-
+            // anchored children (the NEXT LEVEL button) 4000px off-screen (20:46 capture).
+            var bgRt = bg.rectTransform;
+            bgRt.anchorMin = Vector2.zero;
+            bgRt.anchorMax = Vector2.one;
+            bgRt.offsetMin = Vector2.zero;
+            bgRt.offsetMax = Vector2.zero;
             EditorUtility.SetDirty(bg);
+        }
+
+        // Straighten the authored tilt: the win card children carry decorative z-rotations
+        // that read as "skewed, not a flat clean panel" against the reference (Ali/HOD,
+        // 19:07 capture). Reference win cards are axis-aligned.
+        foreach (var rt2 in panel.GetComponentsInChildren<RectTransform>(true))
+        {
+            if (Mathf.Abs(rt2.localEulerAngles.z) > 0.5f && Mathf.Abs(rt2.localEulerAngles.z - 360f) > 0.5f
+                && rt2.gameObject.name != "Tail")
+            { rt2.localRotation = Quaternion.identity; EditorUtility.SetDirty(rt2); }
         }
 
         var green = new Color(0.24f, 0.83f, 0.39f, 1f);

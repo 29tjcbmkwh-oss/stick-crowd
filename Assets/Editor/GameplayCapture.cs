@@ -215,7 +215,7 @@ public static class GameplayCapture
             {
                 if (BattleTime <= 0) BattleTime = EditorApplication.timeSinceStartup;
                 // battle-phase shot: the only moment the boss health bar visibly drains
-                if (!BattleShotDone && EditorApplication.timeSinceStartup - BattleTime >= 1.1)
+                if (!BattleShotDone && EditorApplication.timeSinceStartup - BattleTime >= 1.6)
                 {
                     ScreenCapture.CaptureScreenshot(OutputPathBattle);
                     BattleShotDone = true;

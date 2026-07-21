@@ -27,7 +27,10 @@ namespace _Scripts.Core
             switch (state)
             {
                 case GameState.Win:
-                    PlayConfetti();
+                    // No world-space confetti here: the win panel's opaque backdrop hides the
+                    // burst's center and the leftover quads read as random floating squares
+                    // around the panel edges (Ali flagged them as a broken-sprite look in the
+                    // 19:07 win capture). The UI-layer coin fountain is the celebration.
                     CrowdVictoryJump();
                     FovKick(6f, 0.25f);
                     if (UIManager.Instance != null) UIManager.Instance.PlayCoinFountain();

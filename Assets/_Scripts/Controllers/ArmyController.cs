@@ -104,7 +104,11 @@ namespace _Scripts.Controllers
                 _parent = gameObject.transform;
             }
         
-            private void FixedUpdate() {
+            // Update, not FixedUpdate (HOD P3): moving plain Transforms via MoveTowards in
+            // FixedUpdate renders at 50Hz regardless of display rate — visible whole-crowd
+            // judder on any faster screen. The movement is already deltaTime-scaled, so the
+            // per-frame path is a drop-in.
+            private void Update() {
                  SetFormation();
                  ProgressBar();
             }
