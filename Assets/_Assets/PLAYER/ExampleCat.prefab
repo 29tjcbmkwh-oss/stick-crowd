@@ -31,7 +31,7 @@ Transform:
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8953710619117273339}
+  - {fileID: 6301054297380030897}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83dfd2a7da5f43768ed6ba225a366e09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationTarget: {fileID: 8953710619117273339}
+  rotationTarget: {fileID: 6301054297380030897}
 --- !u!54 &1179908833423862874
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -78,7 +78,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!1001 &8920295109621032720
+--- !u!1001 &5835378700269678170
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -175,8 +175,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e4390129584c4ff2a39700b7173c9e1, type: 3}
---- !u!4 &8953710619117273339 stripped
+--- !u!4 &6301054297380030897 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6e4390129584c4ff2a39700b7173c9e1, type: 3}
-  m_PrefabInstance: {fileID: 8920295109621032720}
+  m_PrefabInstance: {fileID: 5835378700269678170}
   m_PrefabAsset: {fileID: 0}

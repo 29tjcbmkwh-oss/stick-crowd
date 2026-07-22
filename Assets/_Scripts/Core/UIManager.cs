@@ -48,11 +48,13 @@ namespace _Scripts.Core
             // (leaderboard/store buttons never appeared). startButton is a serialized scene
             // reference that definitely lives under the real screen-space canvas.
             var canvas = startButton != null ? startButton.GetComponentInParent<Canvas>() : GetComponentInParent<Canvas>();
+            Debug.Log($"[UIManager] Start canvas lookup: canvas={(canvas != null ? canvas.name : "NULL")}");
             if (canvas != null)
             {
                 leaderboardPanel = LeaderboardPanel.Build(canvas.transform);
                 BuildLeaderboardButton(canvas);
                 BuildSkinStoreButton(canvas);
+                Debug.Log($"[UIManager] built leaderboard+store buttons under {canvas.name}");
             }
         }
 
@@ -297,8 +299,10 @@ namespace _Scripts.Core
             rt.anchoredPosition = new Vector2(-24, -24);
 
             var bg = buttonGO.AddComponent<Image>();
-            bg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-            bg.type = Image.Type.Sliced;
+            // coinSprite, not GetBuiltinResource("UI/Skin/...") — the builtin THROWS in this
+            // Unity build and was the second Start-killer hiding behind the LeaderboardPanel
+            // one (same failure, one line apart in the call chain).
+            if (coinSprite != null) { bg.sprite = coinSprite; bg.type = Image.Type.Sliced; }
             bg.color = new Color(0.06f, 0.08f, 0.16f, 0.82f);
 
             var button = buttonGO.AddComponent<Button>();

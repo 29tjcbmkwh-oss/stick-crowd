@@ -98,6 +98,7 @@ public static class GameplayCapture
         set => SessionState.SetFloat(WinTimeKey, (float)value);
     }
     private static double LastTapTime; // per-frame cadence only; fine as a plain static
+    private static _Scripts.Core.PerfProbe _perfProbe; // wiped by domain reload on play-enter, assigned after
     public const string OutputPathBattle = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-battle.png";
     private const string BattleTimeKey = "GameplayCapture_BattleTime";
     private static double BattleTime
@@ -106,6 +107,13 @@ public static class GameplayCapture
         set => SessionState.SetFloat(BattleTimeKey, (float)value);
     }
     public const string OutputPathStore = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-store.png";
+    public const string OutputPathStart = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-start.png";
+    private const string StartShotKey = "GameplayCapture_StartShot";
+    private static bool StartShotDone
+    {
+        get => SessionState.GetBool(StartShotKey, false);
+        set => SessionState.SetBool(StartShotKey, value);
+    }
     public const string OutputPathReward = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward.png";
     public const string OutputPathRewardReveal = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward-reveal.png";
     private const string StoreShotKey = "GameplayCapture_StoreShot";
@@ -200,9 +208,31 @@ public static class GameplayCapture
 
             double elapsed = EditorApplication.timeSinceStartup - PlayModeStartTime;
 
+            // Start-screen shot BEFORE the store opens: verifies the start UI itself —
+            // notably the leaderboard RANK button, which the UIManager/Canvas parenting bug
+            // had made invisible since it was built (HOD item 2: never once seen in pixels).
+            if (!StartShotDone && elapsed >= 2.5 && !RunStarted)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPathStart);
+                bool found = false;
+                foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
+                {
+                    if (go.name != "SkinStoreButton" || !go.scene.IsValid()) continue;
+                    found = true;
+                    var chain = "";
+                    for (var t = go.transform; t != null; t = t.parent)
+                        chain = $"{t.name}(active={t.gameObject.activeSelf}) > " + chain;
+                    var r = (RectTransform)go.transform;
+                    Debug.Log($"[GameplayCapture] SkinStoreButton activeInHierarchy={go.activeInHierarchy} chain: {chain} anchoredPos={r.anchoredPosition} sizeDelta={r.sizeDelta}");
+                }
+                if (!found) Debug.Log("[GameplayCapture] SkinStoreButton not present AT ALL (destroyed?)");
+                StartShotDone = true;
+                Debug.Log($"[GameplayCapture] start-screen shot requested at {OutputPathStart}");
+            }
+
             // Group B store verification: open the skin store on the start screen, shoot it,
             // close it, all before the run gets forced below.
-            if (!StoreShotDone && elapsed >= 2.7 && elapsed < SecondsBeforeStartingRun && !RunStarted)
+            if (!StoreShotDone && elapsed >= 2.9 && elapsed < SecondsBeforeStartingRun && !RunStarted)
             {
                 var uim = UnityEngine.Object.FindObjectOfType<_Scripts.Core.UIManager>();
                 // startButton anchors the real screen canvas; UIManager itself sits on the
@@ -233,6 +263,7 @@ public static class GameplayCapture
                 if (GameFlowManager.Instance != null)
                 {
                     GameFlowManager.Instance.UpdateGameState(GameState.Game);
+                    _perfProbe = _Scripts.Core.PerfProbe.Begin(); // HOD item 3: frame/GC stats over the run
                     Debug.Log("[GameplayCapture] forced GameState.Game to start the run for capture");
                 }
                 else
@@ -346,9 +377,15 @@ public static class GameplayCapture
             // CaptureScreenshot writes asynchronously (end of frame); give it one extra
             // frame before leaving Play Mode so the files are actually flushed to disk.
             if (!File.Exists(OutputPathEnd)) return;
+            if (_perfProbe != null)
+            {
+                _perfProbe.Dump("/Users/a/blue-vs-orange-runner/base/Builds/perf-report.txt", "run");
+                _perfProbe = null;
+            }
             EditorApplication.isPlaying = false;
             PlayerPrefs.SetInt("skin_equipped", 0);
             PlayerPrefs.Save();
+            StartShotDone = false;
             Shot1Done = false;
             Shot2Done = false;
             Shot3Done = false;

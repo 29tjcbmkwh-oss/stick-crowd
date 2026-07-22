@@ -15,8 +15,12 @@ using _Scripts.Utilities;
 public static class KenneySwap
 {
     private const string CharFbx   = "Assets/_Assets/Kenney/characterMedium.fbx";
-    private const string RunFbx    = "Assets/_Assets/Kenney/Animations/run.fbx";
-    private const string IdleFbx   = "Assets/_Assets/Kenney/Animations/idle.fbx";
+    // The project's proven Mixamo humanoid clips, NOT the pack's own animation FBXes:
+    // Kenney's run/idle fbx rigs failed humanoid retargeting (empty clips -> the whole
+    // crowd T-posed in the 11:42 captures). Humanoid Mixamo clips retarget onto any
+    // humanoid avatar, including characterMedium.
+    private const string RunFbx    = "Assets/_Assets/Stickman/Animations/Player@Run.fbx";
+    private const string IdleFbx   = "Assets/_Assets/Stickman/Animations/Player@Idle.fbx";
     private const string Controller = "Assets/_Assets/Kenney/Kenney.controller";
     private const string MatDir    = "Assets/_Assets/Kenney";
     private const string CatPrefab = "Assets/_Assets/PLAYER/ExampleCat.prefab";

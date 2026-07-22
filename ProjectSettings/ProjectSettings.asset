@@ -227,9 +227,9 @@ PlayerSettings:
   metalAPIValidation: 1
   iOSRenderExtraFrameOnPause: 0
   iosCopyPluginsCodeInsteadOfSymlink: 0
-  appleDeveloperTeamID:
-  iOSManualSigningProvisioningProfileID:
-  tvOSManualSigningProvisioningProfileID:
+  appleDeveloperTeamID: 
+  iOSManualSigningProvisioningProfileID: 
+  tvOSManualSigningProvisioningProfileID: 
   iOSManualSigningProvisioningProfileType: 0
   tvOSManualSigningProvisioningProfileType: 0
   appleEnableAutomaticSigning: 1
@@ -251,15 +251,15 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: 
-  AndroidKeyaliasName: 
+  AndroidKeystoreName: '{inproject}: Builds/arcfield-release.jks'
+  AndroidKeyaliasName: arcfield-bluevsorange
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 0
   AndroidIsGame: 1
   AndroidEnableTango: 0
   androidEnableBanner: 1
   androidUseLowAccuracyLocation: 0
-  androidUseCustomKeystore: 0
+  androidUseCustomKeystore: 1
   m_AndroidBanners:
   - width: 320
     height: 180

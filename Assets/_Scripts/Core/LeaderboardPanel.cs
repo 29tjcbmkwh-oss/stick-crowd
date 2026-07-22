@@ -62,8 +62,13 @@ namespace _Scripts.Core
 
         void Construct()
         {
-            _roundedSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Background.psd");
-            _circleSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+            // GetBuiltinResource<Sprite>("UI/Skin/...") THROWS in this Unity build ("Failed
+            // to find UI/Skin/Knob.psd") — it killed UIManager.Start at the Build() call for
+            // the entire life of this panel, which is why the leaderboard (and everything
+            // built after it in Start) never appeared. The UIManager-supplied rounded sprite
+            // works; null just renders plain quads, which is fine for the scrim/rows.
+            _roundedSprite = UIManager.Instance != null ? UIManager.Instance.coinSprite : null;
+            _circleSprite = _roundedSprite;
 
             var root = (RectTransform)transform;
             Stretch(root);

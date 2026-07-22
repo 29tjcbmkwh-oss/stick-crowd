@@ -17,7 +17,9 @@ namespace _Scripts.Models
             _catAnimator = GetComponentInChildren<Animator>();
             SkinSystem.ApplyTo(gameObject); // equipped store skin (no-op for the default)
             RandomizeIdle();
-            if (GameFlowManager.Instance.state == GameState.Start)
+            // Null-guard: pooled spawns can Awake during play-exit teardown after the
+            // GameFlowManager singleton is already destroyed (exit-time NRE spam, 11:42 log).
+            if (GameFlowManager.Instance != null && GameFlowManager.Instance.state == GameState.Start)
             {
                 ControlAnimationState(0);
             }
