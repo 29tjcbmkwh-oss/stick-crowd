@@ -166,6 +166,12 @@ public static class GameplayCapture
             if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             if (!File.Exists(Marker)) return;
             File.Delete(Marker);
+            // Equip the RETRO GUY texture skin for this automated run so the capture proves
+            // the texture-skin path end-to-end (Cat.Awake reads equipped at spawn). Reset on
+            // exit so a human tester starts from CLASSIC.
+            PlayerPrefs.SetInt("skin_owned_1", 1);
+            PlayerPrefs.SetInt("skin_equipped", 1);
+            PlayerPrefs.Save();
             Debug.Log("[GameplayCapture] marker found — entering Play Mode on Level.unity to capture a screenshot");
             EditorSceneManager.OpenScene("Assets/Scenes/Level.unity", OpenSceneMode.Single);
             CurrentState = State.RequestedPlay; // set BEFORE isPlaying=true triggers the reload
@@ -341,6 +347,8 @@ public static class GameplayCapture
             // frame before leaving Play Mode so the files are actually flushed to disk.
             if (!File.Exists(OutputPathEnd)) return;
             EditorApplication.isPlaying = false;
+            PlayerPrefs.SetInt("skin_equipped", 0);
+            PlayerPrefs.Save();
             Shot1Done = false;
             Shot2Done = false;
             Shot3Done = false;

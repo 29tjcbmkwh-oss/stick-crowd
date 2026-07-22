@@ -17,19 +17,22 @@ namespace _Scripts.Core
             public string Name;
             public int Cost;
             public Color Color;
+            // Resources path of a Kenney skin texture (UV-mapped for characterMedium);
+            // null = plain color tint.
+            public string TexturePath;
         }
 
         // Index 0 = default, always owned. Order defines store slots.
         public static readonly List<SkinDef> Skins = new List<SkinDef>
         {
-            new SkinDef { Name = "CLASSIC",  Cost = 0,     Color = new Color(0.2314f, 0.4863f, 1f) }, // brand blue
-            new SkinDef { Name = "MINT",     Cost = 1500,  Color = new Color(0.24f, 0.83f, 0.55f) },
-            new SkinDef { Name = "SUNSET",   Cost = 3000,  Color = new Color(1f, 0.62f, 0.26f) },
-            new SkinDef { Name = "BERRY",    Cost = 5000,  Color = new Color(0.78f, 0.29f, 0.85f) },
-            new SkinDef { Name = "GOLD",     Cost = 8000,  Color = new Color(1f, 0.78f, 0.16f) },
-            new SkinDef { Name = "CRIMSON",  Cost = 12000, Color = new Color(0.92f, 0.2f, 0.29f) },
-            new SkinDef { Name = "MIDNIGHT", Cost = 16000, Color = new Color(0.16f, 0.19f, 0.38f) },
-            new SkinDef { Name = "PEARL",    Cost = 20000, Color = new Color(0.94f, 0.94f, 0.98f) },
+            new SkinDef { Name = "CLASSIC",    Cost = 0,     Color = new Color(0.2314f, 0.4863f, 1f) }, // brand blue
+            new SkinDef { Name = "RETRO GUY",  Cost = 1500,  Color = Color.white, TexturePath = "Skins/humanMaleA" },
+            new SkinDef { Name = "RETRO GIRL", Cost = 3000,  Color = Color.white, TexturePath = "Skins/humanFemaleA" },
+            new SkinDef { Name = "GOLD",       Cost = 5000,  Color = new Color(1f, 0.78f, 0.16f) },
+            new SkinDef { Name = "ZOMBIE",     Cost = 8000,  Color = Color.white, TexturePath = "Skins/zombieMaleA" },
+            new SkinDef { Name = "ZOMBIE GIRL",Cost = 12000, Color = Color.white, TexturePath = "Skins/zombieFemaleA" },
+            new SkinDef { Name = "MIDNIGHT",   Cost = 16000, Color = new Color(0.16f, 0.19f, 0.38f) },
+            new SkinDef { Name = "PEARL",      Cost = 20000, Color = new Color(0.94f, 0.94f, 0.98f) },
         };
 
         private const string OwnedKeyPrefix = "skin_owned_";
@@ -77,9 +80,24 @@ namespace _Scripts.Core
         {
             int idx = EquippedIndex;
             if (idx == 0) return;
-            Color c = Skins[idx].Color;
+            var skin = Skins[idx];
+            Texture2D tex = skin.TexturePath != null ? Resources.Load<Texture2D>(skin.TexturePath) : null;
             foreach (var r in unit.GetComponentsInChildren<Renderer>(true))
-                if (r.material.HasProperty("_Color")) r.material.color = c;
+            {
+                if (!r.material.HasProperty("_Color")) continue;
+                r.material.color = skin.Color;
+                if (tex != null) r.material.mainTexture = tex;
+            }
+        }
+
+        /// <summary>Preview sprite for the store swatch: the skin texture when present.</summary>
+        public static Sprite PreviewSprite(int i)
+        {
+            var path = Skins[i].TexturePath;
+            if (path == null) return null;
+            var tex = Resources.Load<Texture2D>(path);
+            if (tex == null) return null;
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         }
     }
 }

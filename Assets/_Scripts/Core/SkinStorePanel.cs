@@ -73,9 +73,20 @@ namespace _Scripts.Core
             var swatch = new GameObject("Swatch", typeof(RectTransform));
             swatch.transform.SetParent(slot.transform, false);
             var si = swatch.AddComponent<Image>();
-            si.color = skin.Color;
-            if (UIManager.Instance != null && UIManager.Instance.coinSprite != null)
-            { si.sprite = UIManager.Instance.coinSprite; si.type = Image.Type.Sliced; }
+            var preview = SkinSystem.PreviewSprite(index);
+            if (preview != null)
+            {
+                // real Kenney texture preview (the whole point of the pack integration)
+                si.sprite = preview;
+                si.color = Color.white;
+                si.preserveAspect = true;
+            }
+            else
+            {
+                si.color = skin.Color;
+                if (UIManager.Instance != null && UIManager.Instance.coinSprite != null)
+                { si.sprite = UIManager.Instance.coinSprite; si.type = Image.Type.Sliced; }
+            }
             var srt = (RectTransform)swatch.transform;
             srt.anchoredPosition = new Vector2(0, 55); srt.sizeDelta = new Vector2(150, 130);
 

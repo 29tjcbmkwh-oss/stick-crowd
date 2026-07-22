@@ -31,6 +31,7 @@ public static class AutoBuildTrigger
     private const string ThemeMarker   = "/Users/a/blue-vs-orange-runner/base/apply-theme-request";
     private const string VisualMarker  = "/Users/a/blue-vs-orange-runner/base/visual-overhaul-request";
     private const string CharMarker    = "/Users/a/blue-vs-orange-runner/base/character-swap-request";
+    private const string KenneyMarker  = "/Users/a/blue-vs-orange-runner/base/kenney-swap-request";
     private const string PostFxMarker  = "/Users/a/blue-vs-orange-runner/base/post-processing-request";
     private const string FontMarker    = "/Users/a/blue-vs-orange-runner/base/font-setup-request";
     private static bool _busy;
@@ -49,11 +50,12 @@ public static class AutoBuildTrigger
         var theme   = File.Exists(ThemeMarker);
         var visual  = File.Exists(VisualMarker);
         var chr     = File.Exists(CharMarker);
+        var kenney  = File.Exists(KenneyMarker);
         var build   = File.Exists(BuildMarker);
         var release = File.Exists(ReleaseMarker);
         var postFx  = File.Exists(PostFxMarker);
         var font    = File.Exists(FontMarker);
-        if (!theme && !visual && !chr && !build && !release && !postFx && !font) return;
+        if (!theme && !visual && !chr && !kenney && !build && !release && !postFx && !font) return;
 
         _busy = true;
         try
@@ -87,6 +89,12 @@ public static class AutoBuildTrigger
                 File.Delete(CharMarker);
                 Debug.Log("[AutoBuildTrigger] character marker found — swapping character");
                 CharacterSwap.Run();
+            }
+            if (kenney)
+            {
+                File.Delete(KenneyMarker);
+                Debug.Log("[AutoBuildTrigger] kenney marker found — swapping to Kenney character");
+                KenneySwap.Run();
             }
             if (build)
             {
