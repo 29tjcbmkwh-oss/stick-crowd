@@ -7,14 +7,15 @@ namespace _Scripts.Analytics
     /// Analytics layer (launch blocker per Publishing &amp; Launch Plan / Roadmap growth review,
     /// HOD dispatch 2026-07-23). Same architecture as the ads stack (AdManager/IAdService):
     /// a static facade the gameplay code calls unconditionally, backed by a service chosen at
-    /// boot. GameAnalytics is the chosen SDK — free for indie mobile, one self-contained
-    /// unitypackage (no google-services.json, no second EDM4U resolver fighting AdMob's), and
-    /// its progression/design/ad taxonomy maps 1:1 onto the events we need. The real service
-    /// compiles in behind GAMEANALYTICS_ENABLED (set by GameAnalyticsImporter once the SDK
-    /// package is imported); until then LogAnalyticsService prints every event to the console
-    /// so the whole stream is verifiable in editor captures. NOTE the SDK also needs a game
-    /// key + secret from the GameAnalytics dashboard (account creation — Ali's step, entered
-    /// in the GA Settings asset via the editor GUI).
+    /// boot. Vendor: **PostHog** (Ali's call 2026-07-23 — one analytics vendor studio-wide;
+    /// BloomStrike already runs it), via the official posthog-unity UPM package (git URL in
+    /// Packages/manifest.json; beta, Unity 2021.3+, capture batching + automatic exception
+    /// events built in). The real service compiles in behind POSTHOG_ENABLED (set by the
+    /// PostHogSetup editor script once the package resolves) and activates only when the
+    /// project API key exists at Resources/PostHogKey.txt (line 1 = phc_ key, optional line 2
+    /// = host, default https://us.i.posthog.com) — the key is Ali's step, same pattern as the
+    /// AdMob keys. Until then LogAnalyticsService prints every event to the console so the
+    /// whole stream stays verifiable in editor captures.
     ///
     /// Event coverage (per dispatch): session start/end, level start, gate pass (with type,
     /// label, resulting crowd), game over with cause (obstacle / gate_decrease / boss_battle —
@@ -26,6 +27,7 @@ namespace _Scripts.Analytics
         void LevelStart(int level);
         void LevelComplete(int level);
         void LevelFail(int level, string cause);
+        void GatePass(string type, string label, int crowdAfter);
         void Design(string eventId, float value);
         void Ad(string action, string placement);
         void SessionEnd();
@@ -35,43 +37,60 @@ namespace _Scripts.Analytics
     /// the SDK lands. Every line is grep-able as "[Analytics]".</summary>
     public sealed class LogAnalyticsService : IAnalyticsService
     {
-        public void Initialize() => Debug.Log("[Analytics] init (log-only service — GAMEANALYTICS_ENABLED not set)");
+        public void Initialize() => Debug.Log("[Analytics] init (log-only service — POSTHOG_ENABLED off or Resources/PostHogKey.txt missing)");
         public void LevelStart(int level) => Debug.Log($"[Analytics] progression start Level{level:D3}");
         public void LevelComplete(int level) => Debug.Log($"[Analytics] progression complete Level{level:D3}");
         public void LevelFail(int level, string cause) => Debug.Log($"[Analytics] progression fail Level{level:D3} cause={cause}");
+        public void GatePass(string type, string label, int crowdAfter) => Debug.Log($"[Analytics] gate_pass type={type} label={label} crowd={crowdAfter}");
         public void Design(string eventId, float value) => Debug.Log($"[Analytics] design {eventId} = {value}");
         public void Ad(string action, string placement) => Debug.Log($"[Analytics] ad {action} placement={placement}");
         public void SessionEnd() => Debug.Log("[Analytics] session_end");
     }
 
-#if GAMEANALYTICS_ENABLED
-    /// <summary>Real backend. Compiles only once the GameAnalytics SDK package is imported
-    /// (GameAnalyticsImporter sets the define). Session start/end is handled automatically by
-    /// the SDK; SessionEnd here is a no-op beyond the SDK's own lifecycle hooks.</summary>
-    public sealed class GameAnalyticsService : IAnalyticsService
+#if POSTHOG_ENABLED
+    /// <summary>Real backend over the official posthog-unity SDK. Compiles once the UPM
+    /// package resolves (PostHogSetup sets the define); constructed only when the API key
+    /// file exists. Everything maps onto PostHog's capture(event, properties) model; the SDK
+    /// batches internally (FlushAt) and auto-captures unhandled exceptions as $exception.</summary>
+    public sealed class PostHogAnalyticsService : IAnalyticsService
     {
-        public void Initialize() => GameAnalyticsSDK.GameAnalytics.Initialize();
-        public void LevelStart(int level) => GameAnalyticsSDK.GameAnalytics.NewProgressionEvent(
-            GameAnalyticsSDK.GAProgressionStatus.Start, $"Level{level:D3}");
-        public void LevelComplete(int level) => GameAnalyticsSDK.GameAnalytics.NewProgressionEvent(
-            GameAnalyticsSDK.GAProgressionStatus.Complete, $"Level{level:D3}");
-        public void LevelFail(int level, string cause) => GameAnalyticsSDK.GameAnalytics.NewProgressionEvent(
-            GameAnalyticsSDK.GAProgressionStatus.Fail, $"Level{level:D3}", cause);
-        public void Design(string eventId, float value) => GameAnalyticsSDK.GameAnalytics.NewDesignEvent(eventId, value);
-        public void Ad(string action, string placement)
+        private readonly string _apiKey;
+        private readonly string _host;
+
+        public PostHogAnalyticsService(string apiKey, string host)
         {
-            var adAction = action switch
-            {
-                "shown" => GameAnalyticsSDK.GAAdAction.Show,
-                "completed" => GameAnalyticsSDK.GAAdAction.RewardReceived,
-                "failed" => GameAnalyticsSDK.GAAdAction.FailedShow,
-                _ => GameAnalyticsSDK.GAAdAction.Request,
-            };
-            var adType = placement == "interstitial"
-                ? GameAnalyticsSDK.GAAdType.Interstitial : GameAnalyticsSDK.GAAdType.RewardedVideo;
-            GameAnalyticsSDK.GameAnalytics.NewAdEvent(adAction, adType, "admob", placement);
+            _apiKey = apiKey;
+            _host = host;
         }
-        public void SessionEnd() { } // SDK-managed
+
+        public void Initialize() => PostHogUnity.PostHog.Setup(new PostHogUnity.PostHogConfig
+        {
+            ApiKey = _apiKey,
+            Host = _host,
+        });
+
+        public void LevelStart(int level) => PostHogUnity.PostHog.Capture("level_start",
+            new System.Collections.Generic.Dictionary<string, object> { { "level", level } });
+
+        public void LevelComplete(int level) => PostHogUnity.PostHog.Capture("level_complete",
+            new System.Collections.Generic.Dictionary<string, object> { { "level", level } });
+
+        public void LevelFail(int level, string cause) => PostHogUnity.PostHog.Capture("level_fail",
+            new System.Collections.Generic.Dictionary<string, object> { { "level", level }, { "cause", cause } });
+
+        // One event name with properties, never value-embedded names ("gate:pass:+20" as an
+        // event id would mint a new event type per gate label and wreck PostHog insights).
+        public void GatePass(string type, string label, int crowdAfter) => PostHogUnity.PostHog.Capture("gate_pass",
+            new System.Collections.Generic.Dictionary<string, object>
+                { { "type", type }, { "label", label }, { "crowd", crowdAfter } });
+
+        public void Design(string eventId, float value) => PostHogUnity.PostHog.Capture(eventId,
+            new System.Collections.Generic.Dictionary<string, object> { { "value", value } });
+
+        public void Ad(string action, string placement) => PostHogUnity.PostHog.Capture("ad",
+            new System.Collections.Generic.Dictionary<string, object> { { "action", action }, { "placement", placement } });
+
+        public void SessionEnd() => PostHogUnity.PostHog.Flush();
     }
 #endif
 
@@ -89,8 +108,17 @@ namespace _Scripts.Analytics
         private static void Bootstrap()
         {
             if (_service != null) return;
-#if GAMEANALYTICS_ENABLED
-            _service = new GameAnalyticsService();
+#if POSTHOG_ENABLED
+            // Key file: Resources/PostHogKey.txt — line 1 = phc_ project key, optional
+            // line 2 = ingestion host. Missing/empty file -> log-only service, no network.
+            var keyFile = Resources.Load<TextAsset>("PostHogKey");
+            var lines = keyFile != null
+                ? keyFile.text.Split('\n', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>();
+            if (lines.Length > 0 && lines[0].Trim().StartsWith("phc_"))
+                _service = new PostHogAnalyticsService(lines[0].Trim(),
+                    lines.Length > 1 ? lines[1].Trim() : "https://us.i.posthog.com");
+            else
+                _service = new LogAnalyticsService();
 #else
             _service = new LogAnalyticsService();
 #endif
@@ -112,7 +140,7 @@ namespace _Scripts.Analytics
         }
 
         public static void GatePass(string type, string label, int crowdAfter) =>
-            _service?.Design($"gate:pass:{type}:{label}", crowdAfter);
+            _service?.GatePass(type, label, crowdAfter);
 
         public static void Ad(string action, string placement) => _service?.Ad(action, placement);
 
