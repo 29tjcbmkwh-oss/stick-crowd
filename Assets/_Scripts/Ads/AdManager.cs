@@ -70,7 +70,12 @@ namespace _Scripts.Ads
             var everyN = Mathf.Max(1, AdConfig.InterstitialEveryNGameOvers);
             if (_gameOverCount % everyN == 0 && IsInterstitialReady)
             {
-                _service.ShowInterstitial(onContinue);
+                _Scripts.Analytics.Analytics.Ad("shown", "interstitial");
+                _service.ShowInterstitial(() =>
+                {
+                    _Scripts.Analytics.Analytics.Ad("completed", "interstitial");
+                    onContinue?.Invoke();
+                });
             }
             else
             {
@@ -84,8 +89,25 @@ namespace _Scripts.Ads
         /// </summary>
         public void ShowRewarded(Action onRewardEarned, Action onFailedOrDismissed = null)
         {
-            if (_service == null) { onFailedOrDismissed?.Invoke(); return; }
-            _service.ShowRewarded(onRewardEarned, onFailedOrDismissed);
+            if (_service == null)
+            {
+                _Scripts.Analytics.Analytics.Ad("failed", "rewarded");
+                onFailedOrDismissed?.Invoke();
+                return;
+            }
+            // "requested" rather than "shown": the NullAdService (and a not-loaded AdMob
+            // unit) fails without ever displaying anything, so logging "shown" here would
+            // overcount. completed/failed from the callbacks are the truthful outcomes.
+            _Scripts.Analytics.Analytics.Ad("requested", "rewarded");
+            _service.ShowRewarded(() =>
+            {
+                _Scripts.Analytics.Analytics.Ad("completed", "rewarded");
+                onRewardEarned?.Invoke();
+            }, () =>
+            {
+                _Scripts.Analytics.Analytics.Ad("failed", "rewarded");
+                onFailedOrDismissed?.Invoke();
+            });
         }
     }
 }

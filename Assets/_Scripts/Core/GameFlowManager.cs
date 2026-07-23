@@ -54,6 +54,8 @@ namespace _Scripts.Core
         {
             if (_lossHandled) return;
             _lossHandled = true;
+            // Cause was set by whichever system pushed the Lose state (obstacle / gate / boss).
+            _Scripts.Analytics.Analytics.LevelFail(PlayerPrefs.GetInt("level", 0) + 1);
             PauseGameFlow();
             _radialFormation.Amount = 0;
             playerCount = 0;
@@ -69,6 +71,7 @@ namespace _Scripts.Core
         {
             if (_winHandled) return;
             _winHandled = true;
+            _Scripts.Analytics.Analytics.LevelComplete(PlayerPrefs.GetInt("level", 0) + 1);
             ResetReviveAttempt();
             PauseGameFlow();
             ScoreManager.Instance.EnsureRunReward();
@@ -145,6 +148,10 @@ namespace _Scripts.Core
         
         public void UpdateGameState(GameState newState)
         {
+            // Level-start fires only on the real run start (Start -> Game), not on resume
+            // from Pause or on the post-MiniBattle return to Game.
+            if (newState == GameState.Game && state == GameState.Start)
+                _Scripts.Analytics.Analytics.LevelStart(PlayerPrefs.GetInt("level", 0) + 1);
             state = newState;
 
             switch (newState)

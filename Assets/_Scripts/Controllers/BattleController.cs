@@ -94,6 +94,7 @@ namespace _Scripts.Controllers
             {
                 didLost = true;
                 UIManager.Instance.ClosePopup(battleUI);
+                _Scripts.Analytics.Analytics.PendingLossCause = "boss_battle";
                 GameFlowManager.Instance.UpdateGameState(GameState.Lose);
             }
             if (playerBarAmount >= 1)

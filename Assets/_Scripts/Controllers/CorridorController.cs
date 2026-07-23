@@ -52,9 +52,22 @@ namespace _Scripts.Controllers
             GameFlowManager.Instance.SetPlayerCount(formation.Amount);
             // Update UI
             UIManager.Instance.SetPlayerCountText(formation.Amount);
+            // Same label text the gate itself displays (ThemeSetup.GateLabelText is
+            // editor-only, so mirrored inline here).
+            string gateLabel = corridor.GetCorridorType() switch
+            {
+                Constants.CorridorTypes.Increase => $"+{corridor.increaseAmount}",
+                Constants.CorridorTypes.Decrease => $"-{corridor.decreaseAmount}",
+                Constants.CorridorTypes.Multiply => $"x{corridor.multiplyAmount}",
+                Constants.CorridorTypes.Divide => $"/{corridor.divideAmount}",
+                _ => "?",
+            };
+            _Scripts.Analytics.Analytics.GatePass(
+                corridor.GetCorridorType().ToString(), gateLabel, formation.Amount);
             // Game Over check
             if (formation.Amount <= 0)
             {
+                _Scripts.Analytics.Analytics.PendingLossCause = "gate_decrease";
                 GameFlowManager.Instance.UpdateGameState(GameState.Lose);
             }
 

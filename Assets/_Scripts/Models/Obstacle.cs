@@ -44,6 +44,7 @@ public class Obstacle : MonoBehaviour
         // Game Over check
         if (formation.Amount <= 0)
         {
+            _Scripts.Analytics.Analytics.PendingLossCause = "obstacle";
             GameFlowManager.Instance.UpdateGameState(GameState.Lose);
         }
         
