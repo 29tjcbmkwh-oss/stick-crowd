@@ -34,9 +34,18 @@ public static class PostProcessingSetup
             AssetDatabase.CreateAsset(profile, ProfilePath);
 
             var bloom = AddPersisted<Bloom>(profile);
+            // HOD 2026-07-23 item 2 retune, second pass. First pass (0.75/2.6/knee 0.65)
+            // bleached the whole track white — PPv2's soft knee extends the bloom curve DOWN
+            // to threshold*(1-knee), so knee 0.65 effectively started blooming at ~0.26 and
+            // the white track (~1.0 HDR) fully bloomed onto itself (17:48 start capture).
+            // Now: hard-ish threshold at 1.0 with knee 0.35 keeps the track (just under 1.0)
+            // out of the pass while the gate faces (blue channel ~1.2-1.3 HDR with the 0.32x
+            // emission) still cross it; 2.0 intensity makes the gate halo actually visible
+            // (the original 0.4 was why "technically live" read as nothing). Glow lives HERE,
+            // not in gate emission — see the bleach history note on ThemeSetup.GateEmission.
             bloom.threshold.overrideState = true;  bloom.threshold.value = 1.0f;
-            bloom.intensity.overrideState = true;  bloom.intensity.value = 0.4f;
-            bloom.softKnee.overrideState = true;   bloom.softKnee.value = 0.5f;
+            bloom.intensity.overrideState = true;  bloom.intensity.value = 2.0f;
+            bloom.softKnee.overrideState = true;   bloom.softKnee.value = 0.35f;
             bloom.dirtIntensity.overrideState = true; bloom.dirtIntensity.value = 0f; // no lens-dirt asset
 
             var grading = AddPersisted<ColorGrading>(profile);
@@ -45,8 +54,10 @@ public static class PostProcessingSetup
             grading.saturation.overrideState = true; grading.saturation.value = 14f;
 
             var vignette = AddPersisted<Vignette>(profile);
-            vignette.intensity.overrideState = true;  vignette.intensity.value = 0.2f;
-            vignette.smoothness.overrideState = true; vignette.smoothness.value = 0.4f;
+            // nudged with the bloom retune: the stronger highlight lift needs slightly more
+            // edge falloff or the frame reads flat-bright instead of focused.
+            vignette.intensity.overrideState = true;  vignette.intensity.value = 0.28f;
+            vignette.smoothness.overrideState = true; vignette.smoothness.value = 0.45f;
 
             var ao = AddPersisted<AmbientOcclusion>(profile);
             ao.intensity.overrideState = true; ao.intensity.value = 0.3f;

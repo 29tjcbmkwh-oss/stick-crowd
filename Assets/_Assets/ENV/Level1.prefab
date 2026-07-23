@@ -1891,6 +1891,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelEndBoss
       objectReference: {fileID: 0}
+    - target: {fileID: 730060629448381087, guid: 25658ac2f200a4b7d9077ebd04abc35c, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 91a828f6fe5244e058ad7a4625db1a41, type: 2}
     m_RemovedComponents:
     - {fileID: 397058428674935598, guid: 25658ac2f200a4b7d9077ebd04abc35c, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 25658ac2f200a4b7d9077ebd04abc35c, type: 3}

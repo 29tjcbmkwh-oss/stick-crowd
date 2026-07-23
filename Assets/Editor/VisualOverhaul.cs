@@ -264,14 +264,12 @@ public static class VisualOverhaul
             if (tmp != null)
             {
                 // Pin the font explicitly: the label's original font guid (8a89fa14...) is
-                // dangling — the asset no longer exists — so on any prefab resave TMP swaps
-                // to the TMP-default "RussoOne SDF", whose asset is BROKEN (atlas fileID 0,
-                // atlasWidth 0 — created via the scripted CreateFontAsset path the Reskin
-                // Spec §5 warned against) and renders zero glyphs. This was the invisible-
-                // counter bug in the 17:02-17:12 captures. Pin to the package's known-good
-                // LiberationSans SDF.
-                var goodFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
-                    AssetDatabase.GUIDToAssetPath("8f586378b4e144a9851e7b34d9b748ee"));
+                // dangling — the asset no longer exists — so on any prefab resave TMP falls
+                // back to whatever the project default happens to be. Pin to the best
+                // verified-healthy display font instead of trusting the fallback (the
+                // invisible-counter bug in the 17:02-17:12 captures was exactly this fallback
+                // landing on the then-empty RussoOne atlas).
+                var goodFont = BestDisplayFont();
                 if (goodFont != null) tmp.font = goodFont;
                 tmp.color = Color.white;
                 tmp.fontStyle = FontStyles.Bold;
@@ -284,30 +282,39 @@ public static class VisualOverhaul
         finally { PrefabUtility.UnloadPrefabContents(root); }
     }
 
-    // The scripted "RussoOne SDF" TMP asset is broken (atlas fileID 0, atlasWidth 0 — the
-    // CreateFontAsset shortcut the Reskin Spec §5 warned against); every TMP that falls back
-    // to the project default renders zero glyphs. Until Russo One is rebuilt through the TMP
-    // Font Asset Creator GUI (needs a human), the project default must be the known-good
-    // LiberationSans SDF so default-font consumers (crowd counter, leaderboard button, any
-    // future TMP) stay visible. Same SerializedObject route FontSetup uses.
+    // Keeps the project default TMP font on a font whose atlas is actually populated.
+    // History: the scripted "RussoOne SDF" asset was born with an empty 0x0 dynamic atlas
+    // (rendered zero glyphs), so this used to force LiberationSans. FontSetup now bakes the
+    // full printable-ASCII set into the Russo One atlas, so when Russo One checks out healthy
+    // it is RESTORED as the default (Reskin Spec §5); LiberationSans stays the fallback only
+    // while Russo One is broken or absent. Same SerializedObject route FontSetup uses.
     private static void RepairDefaultFont()
     {
-        var russo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Assets/Fonts/RussoOne SDF.asset");
-        bool russoBroken = russo == null || russo.atlasTexture == null || russo.atlasTexture.width == 0;
-        if (!russoBroken) return;
-
-        var liberation = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
-            AssetDatabase.GUIDToAssetPath("8f586378b4e144a9851e7b34d9b748ee"));
-        if (liberation == null || TMP_Settings.instance == null) return;
-        if (TMP_Settings.defaultFontAsset == liberation) return;
+        var want = BestDisplayFont();
+        if (want == null || TMP_Settings.instance == null) return;
+        if (TMP_Settings.defaultFontAsset == want) return;
 
         var so = new SerializedObject(TMP_Settings.instance);
         var prop = so.FindProperty("m_defaultFontAsset");
         if (prop == null) return;
-        prop.objectReferenceValue = liberation;
+        prop.objectReferenceValue = want;
         so.ApplyModifiedProperties();
         EditorUtility.SetDirty(TMP_Settings.instance);
-        Debug.Log("[VisualOverhaul] TMP default font -> LiberationSans SDF (RussoOne SDF asset is broken; needs GUI rebuild)");
+        Debug.Log($"[VisualOverhaul] TMP default font -> {want.name}");
+    }
+
+    // Russo One when its atlas is verifiably populated (width > 0 AND at least one glyph
+    // baked), else the package's known-good LiberationSans SDF. Both the default-font repair
+    // and the counter-bubble pin route through this so they can never disagree.
+    private static TMP_FontAsset BestDisplayFont()
+    {
+        var russo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Assets/Fonts/RussoOne SDF.asset");
+        bool russoHealthy = russo != null && russo.atlasTexture != null &&
+                            russo.atlasTexture.width > 0 &&
+                            russo.characterTable != null && russo.characterTable.Count > 0;
+        if (russoHealthy) return russo;
+        return AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
+            AssetDatabase.GUIDToAssetPath("8f586378b4e144a9851e7b34d9b748ee"));
     }
 
     // HOD P4: the boss stood in a pale void — no staging, no "final confrontation" read.

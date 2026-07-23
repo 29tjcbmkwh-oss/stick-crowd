@@ -133,10 +133,15 @@ public static class ThemeSetup
         return touched;
     }
 
-    // Gate emission multiplier — single source shared with VisualOverhaul. 0.22x is the
-    // corrected value from 2026-07-20 (1.35x, then 0.55x, both bleached the brand hues toward
-    // white over a bright environment; see the Transparent() comment below).
-    public const float GateEmission = 0.22f;
+    // Gate emission multiplier — single source shared with VisualOverhaul. 1.35x and 0.55x
+    // both bleached the brand hues toward white over the bright environment (2026-07-20; see
+    // the Transparent() comment below), so the "make the gates glow" retune (HOD 2026-07-23
+    // item 2) deliberately does NOT crank this again: the visible glow comes from the bloom
+    // pass instead (threshold lowered below gate luminance in PostProcessingSetup), which
+    // extracts a blue/orange-dominant halo and preserves hue. 0.32x is a nudge to keep the
+    // gates among the brightest surfaces so the bloom favours them — still under the 0.55x
+    // known-bleach line.
+    public const float GateEmission = 0.32f;
 
     public static string GateLabelText(Corridor c) => c.GetCorridorType() switch
     {

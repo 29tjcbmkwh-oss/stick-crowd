@@ -114,6 +114,15 @@ public static class GameplayCapture
         get => SessionState.GetBool(StartShotKey, false);
         set => SessionState.SetBool(StartShotKey, value);
     }
+    // Splash-hold shot (HOD 2026-07-23 item 4): the pop-in finishes at ~0.55s and holds to
+    // ~1.85s, so 1.2s lands on the fully-revealed ArcField lockup.
+    public const string OutputPathSplash = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-splash.png";
+    private const string SplashShotKey = "GameplayCapture_SplashShot";
+    private static bool SplashShotDone
+    {
+        get => SessionState.GetBool(SplashShotKey, false);
+        set => SessionState.SetBool(SplashShotKey, value);
+    }
     public const string OutputPathReward = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward.png";
     public const string OutputPathRewardReveal = "/Users/a/blue-vs-orange-runner/base/Builds/gameplay-capture-reward-reveal.png";
     private const string StoreShotKey = "GameplayCapture_StoreShot";
@@ -143,6 +152,21 @@ public static class GameplayCapture
     {
         get => SessionState.GetBool(Shot2Key, false);
         set => SessionState.SetBool(Shot2Key, value);
+    }
+
+    private static void DumpTree(Transform t, int depth, System.Text.StringBuilder sb)
+    {
+        if (depth > 3) return;
+        var r = t as RectTransform;
+        var img = t.GetComponent<UnityEngine.UI.Image>();
+        var grp = t.GetComponent<CanvasGroup>();
+        sb.Append(new string(' ', depth * 2))
+          .Append($"{t.name} active={t.gameObject.activeSelf}")
+          .Append(r != null ? $" pos={r.anchoredPosition} size={r.sizeDelta} scale={r.localScale}" : "")
+          .Append(img != null ? $" imgA={img.color.a:F2}" : "")
+          .Append(grp != null ? $" grpA={grp.alpha:F2}" : "")
+          .Append('\n');
+        foreach (Transform c in t) DumpTree(c, depth + 1, sb);
     }
 
     private static void ClickButtonWithLabel(string label)
@@ -208,24 +232,35 @@ public static class GameplayCapture
 
             double elapsed = EditorApplication.timeSinceStartup - PlayModeStartTime;
 
+            if (!SplashShotDone && elapsed >= 1.2 && !RunStarted)
+            {
+                ScreenCapture.CaptureScreenshot(OutputPathSplash);
+                SplashShotDone = true;
+                Debug.Log($"[GameplayCapture] splash-hold shot requested at {OutputPathSplash}");
+            }
+
             // Start-screen shot BEFORE the store opens: verifies the start UI itself —
             // notably the leaderboard RANK button, which the UIManager/Canvas parenting bug
             // had made invisible since it was built (HOD item 2: never once seen in pixels).
             if (!StartShotDone && elapsed >= 2.5 && !RunStarted)
             {
                 ScreenCapture.CaptureScreenshot(OutputPathStart);
-                bool found = false;
-                foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
+                // Full canvas dump, not a single-button trace: the 17:48 tracer proved
+                // SkinStoreButton sits under the active Canvas but is itself inactive, which
+                // contradicts every static code path (only the state-change handler toggles
+                // it, and the visible start button says the last state was Start). Seeing the
+                // whole tree at once settles what is actually live at 2.5s.
+                Debug.Log($"[GameplayCapture] state at 2.5s = {(GameFlowManager.Instance != null ? GameFlowManager.Instance.state.ToString() : "no GFM")}");
+                var uimTrace = UnityEngine.Object.FindObjectOfType<_Scripts.Core.UIManager>();
+                var canvasTrace = uimTrace != null && uimTrace.startButton != null
+                    ? uimTrace.startButton.GetComponentInParent<Canvas>() : null;
+                if (canvasTrace != null)
                 {
-                    if (go.name != "SkinStoreButton" || !go.scene.IsValid()) continue;
-                    found = true;
-                    var chain = "";
-                    for (var t = go.transform; t != null; t = t.parent)
-                        chain = $"{t.name}(active={t.gameObject.activeSelf}) > " + chain;
-                    var r = (RectTransform)go.transform;
-                    Debug.Log($"[GameplayCapture] SkinStoreButton activeInHierarchy={go.activeInHierarchy} chain: {chain} anchoredPos={r.anchoredPosition} sizeDelta={r.sizeDelta}");
+                    var sb = new System.Text.StringBuilder("[GameplayCapture] canvas tree @2.5s:\n");
+                    DumpTree(canvasTrace.transform, 0, sb);
+                    Debug.Log(sb.ToString());
                 }
-                if (!found) Debug.Log("[GameplayCapture] SkinStoreButton not present AT ALL (destroyed?)");
+                else Debug.Log("[GameplayCapture] no canvas found for tree dump");
                 StartShotDone = true;
                 Debug.Log($"[GameplayCapture] start-screen shot requested at {OutputPathStart}");
             }
@@ -385,6 +420,7 @@ public static class GameplayCapture
             EditorApplication.isPlaying = false;
             PlayerPrefs.SetInt("skin_equipped", 0);
             PlayerPrefs.Save();
+            SplashShotDone = false;
             StartShotDone = false;
             Shot1Done = false;
             Shot2Done = false;

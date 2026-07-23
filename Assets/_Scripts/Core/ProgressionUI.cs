@@ -74,15 +74,24 @@ namespace _Scripts.Core
             }
         }
 
+        // UIManager's own runtime-built corner entry points live in exactly the zone the
+        // position sweep below nukes. ROOT CAUSE of the invisible RANK/SKINS buttons (HOD
+        // 2026-07-23 item 3): UIManager.Start builds them fine, then this sweep runs one
+        // frame later (Start here is a coroutine) and hides them — no state change involved,
+        // which is why the state-event logs looked innocent. Never hide these.
+        private static readonly string[] CornerAllowlist = { "LeaderboardButton", "SkinStoreButton" };
+
         // Position-based, name-agnostic: hide any template image sitting in the extreme top-left
-        // or top-right corner (the leftover boxes), while never touching my own HUD. Robust to
-        // whatever those objects are actually named — hiding by name proved unreliable.
+        // or top-right corner (the leftover boxes), while never touching my own HUD or the
+        // allowlisted intentional corner UI. Robust to whatever the template objects are
+        // actually named — hiding by name proved unreliable.
         private void HideCornerClutter()
         {
             var corners = new Vector3[4];
             foreach (Image img in FindObjectsOfType<Image>())
             {
                 if (img.transform.IsChildOf(transform)) continue;   // never touch my own HUD
+                if (IsAllowlisted(img.transform)) continue;
                 img.rectTransform.GetWorldCorners(corners);          // screen pixels for overlay canvas
                 Vector3 c = (corners[0] + corners[2]) * 0.5f;
                 float x = c.x / Screen.width, y = c.y / Screen.height;
@@ -91,6 +100,14 @@ namespace _Scripts.Core
                     img.gameObject.SetActive(false);
                 }
             }
+        }
+
+        private static bool IsAllowlisted(Transform t)
+        {
+            for (; t != null; t = t.parent)
+                foreach (string n in CornerAllowlist)
+                    if (t.name == n) return true;
+            return false;
         }
 
         private void BuildUi()
