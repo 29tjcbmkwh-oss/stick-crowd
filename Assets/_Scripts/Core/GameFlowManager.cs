@@ -22,6 +22,10 @@ namespace _Scripts.Core
         private bool _doubleRewardUsed;
         private static bool s_reviveConsumedForAttempt;
         private static int s_rewardedRetryArmySize;
+        // The level's serialized starting crowd (captured in Start BEFORE any rewarded-retry
+        // override), so the revive bonus below scales with whatever the designer sets instead
+        // of hardcoding a count that can silently fall behind it.
+        private int _defaultArmySize;
         public static event Action<GameState> onGameStateChange;
 
         public bool CanRevive => _lossHandled && !_reviveUsed;
@@ -33,6 +37,7 @@ namespace _Scripts.Core
             levelController = this.GetComponent<LevelController>();
             _radialFormation = player.GetComponent<FormationBase>();
             _reviveUsed = s_reviveConsumedForAttempt;
+            _defaultArmySize = _radialFormation.Amount; // before the retry override below
             if (s_rewardedRetryArmySize > 0)
             {
                 _radialFormation.Amount = s_rewardedRetryArmySize;
@@ -101,11 +106,17 @@ namespace _Scripts.Core
             {
                 _reviveUsed = true;
                 s_reviveConsumedForAttempt = true;
-                s_rewardedRetryArmySize = 5;
+                // DOUBLE the normal starting crowd, never a fixed count: the old hardcoded 5
+                // was WORSE than declining the ad and restarting free at the level default
+                // (22) — a backwards incentive found by Marketing Lead 2026-07-23. Derived
+                // from the captured default so it can never fall behind a redesigned level.
+                s_rewardedRetryArmySize = Mathf.Max(_defaultArmySize * 2, _defaultArmySize + 1);
                 completed?.Invoke(true);
                 // Restarting is safer and fairer than attempting to rebuild a
-                // destroyed crowd inside the boss camera rig. The rewarded
-                // retry begins with five runners and cannot be chained again.
+                // destroyed crowd inside the boss camera rig (a true in-place revive would
+                // resurrect a near-zero crowd anyway — you lose BECAUSE the crowd hit zero,
+                // so "preserve size at death" preserves nothing worth having). The rewarded
+                // retry restarts with a 2x head start and cannot be chained again.
                 levelController.RestartLevel();
             }, () => completed?.Invoke(false));
         }
